@@ -111,6 +111,3 @@ def hello_world():
 def hello():
     return "<p>Hello again!</p>"
 
-
-if __name__ == "__main__":
-    app.run(debug=True)
