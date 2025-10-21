@@ -48,6 +48,9 @@ class SupabaseStorage:
             dict: Upload info with bucket and key
         """
         key = f"{folder.strip('/')}/{file_name}" if folder else file_name
+        print(key)
+        print(file_name)
+        print(folder)
 
         if isinstance(data, bytes):
             payload = io.BytesIO(data)
@@ -62,7 +65,6 @@ class SupabaseStorage:
         return {
             "bucket": self.bucket,
             "key": key,
-            "public_url": f"{self.endpoint}/{self.bucket}/{key}",
         }
 
     def fetch_file(self, file_name, folder=None):

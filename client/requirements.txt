@@ -1,1 +1,12 @@
-Flask
+# Web framework
+Flask==3.0.3
+
+# AWS SDK (used to connect to Supabase's S3-compatible storage)
+boto3==1.35.0
+botocore==1.35.0
+
+# For safely handling file uploads
+Werkzeug==3.0.3
+
+# For environment variable management (optional but recommended)
+python-dotenv==1.0.1
