@@ -3,6 +3,8 @@ from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 from features.supabase_storage import SupabaseStorage  # the helper class from earlier
 from utils.data import FILETYPE, FOLDERS
+from features.gemini_api import GeminiTextGenerator
+from utils.documentUtils import DocumentUtils
 
 app = Flask(__name__)
 
@@ -20,6 +22,9 @@ storage = SupabaseStorage(
     secret_key=SUPABASE_SECRET_KEY,
 )
 
+# Initialize gemini
+
+gemini = GeminiTextGenerator(api_key=os.environ.get("GEMINI_API_KEY"))
 
 @app.route("/api/upload", methods=["POST"])
 def upload_file():
@@ -66,13 +71,34 @@ def upload_file():
     upload_name = f"{filetype}{ext}"
 
     try:
+        # Wrap bytes in BytesIO so it behaves like a file
+        from io import BytesIO
+        file_bytes = file.read()
+        file_stream = BytesIO(file_bytes)
         result = storage.upload_file(file, upload_name, folder=folder)
+
+        if filetype == "resume":   
+            # file.seek(0)
+            extracted_text = DocumentUtils.extract_text(file_stream)
+            print(extracted_text)
+
+            # 3️⃣ Generate summary using Gemini
+            summary_text = gemini.generate(extracted_text, "summary")
+
+            # Prepare a summary filename
+            summary_filename = "resume_summary.txt"
+            summary_bytes = summary_text.encode("utf-8")
+            
+            # Upload summary to Supabase under 'summary' folder
+            storage.upload_file(summary_bytes, summary_filename, folder="summary")
+
         return jsonify({
             "message": "File uploaded successfully",
             "bucket": result["bucket"],
             "key": result["key"],
         }), 200
     except Exception as e:
+        print(e)
         return jsonify({"error": str(e)}), 500
 
 
