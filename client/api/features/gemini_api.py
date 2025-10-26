@@ -3,6 +3,8 @@ import os
 import logging
 import google.generativeai as genai
 from google.api_core.exceptions import GoogleAPIError
+from datetime import datetime
+
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -11,6 +13,9 @@ from utils.data import PROMPTS
 
 
 logger = logging.getLogger(__name__)
+def get_today_date():
+    return datetime.now().strftime("%B %d, %Y")  # e.g., October 25, 2025
+
 
 class GeminiTextGenerationError(RuntimeError):
     """Raised when Gemini API call fails."""
@@ -29,14 +34,23 @@ class GeminiTextGenerator:
         self.model = genai.GenerativeModel(self.model_name)
         logger.info(f"Gemini model '{self.model_name}' initialized.")
 
-    def generate(self, text, task):
+    def generate(self, text, task, second_text=None):
         """Generate text based on task and input text."""
         if not text.strip():
             raise ValueError("Input text cannot be empty.")
         if task not in self.prompts:
             raise ValueError(f"No prompt found for task '{task}'.")
+        
+        if second_text:
+            prompt = self.prompts[task].format(
+                resume_summary=text.strip(),
+                job_description=second_text.strip(),
+                DATE=get_today_date()
+            )
+        else:
+            prompt = self.prompts[task].format(input_text=text.strip())
 
-        prompt = self.prompts[task].format(input_text=text.strip())
+        # prompt = self.prompts[task].format(input_text=text.strip())
         logger.debug(f"Generated prompt for '{task}': {prompt[:150]}...")
 
         try:

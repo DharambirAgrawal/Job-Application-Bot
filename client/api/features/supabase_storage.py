@@ -82,7 +82,9 @@ class SupabaseStorage:
 
         try:
             obj = self.client.get_object(Bucket=self.bucket, Key=key)
-            return obj["Body"].read()
+            # return obj["Body"].read()
+            file_bytes = obj["Body"].read()
+            return io.BytesIO(file_bytes)  
         except (BotoCoreError, ClientError) as e:
             raise RuntimeError(f"Failed to fetch '{key}' from Supabase: {e}")
 

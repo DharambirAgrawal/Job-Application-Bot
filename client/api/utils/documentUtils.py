@@ -51,25 +51,58 @@ class DocumentUtils:
                     continue
                 DocumentUtils._replace_text(paragraph, old, new)
 
+    # @staticmethod
+    # def _replace_text(paragraph, old, new):
+    #     """Replace text inside paragraph runs without changing formatting."""
+    #     replaced = False
+    #     for run in paragraph.runs:
+    #         if old in run.text:
+    #             run.text = run.text.replace(old, new)
+    #             replaced = True
+    #     if replaced:
+    #         return
+
+    #     # Handle placeholders spanning multiple runs
+    #     while True:
+    #         text_combined = "".join(run.text for run in paragraph.runs)
+    #         start = text_combined.find(old)
+    #         if start == -1:
+    #             break
+    #         end = start + len(old)
+    #         DocumentUtils._replace_across_runs(paragraph, start, end, new)
+    
     @staticmethod
     def _replace_text(paragraph, old, new):
-        """Replace text inside paragraph runs without changing formatting."""
-        replaced = False
+        """Replace text inside paragraph runs without changing formatting.
+        If new is empty, remove the placeholder. If the paragraph becomes empty, remove it completely.
+        """
+        if old not in paragraph.text:
+            return
+
+        # If replacement is empty, remove the placeholder
+        if new == "":
+            for run in paragraph.runs:
+                run.text = run.text.replace(old, "")
+            # If paragraph becomes empty, clear all runs
+            if paragraph.text.strip() == "":
+                for run in paragraph.runs:
+                    run.text = ""
+            return
+
+        # Normal replacement
         for run in paragraph.runs:
             if old in run.text:
                 run.text = run.text.replace(old, new)
-                replaced = True
-        if replaced:
-            return
 
         # Handle placeholders spanning multiple runs
         while True:
-            text_combined = "".join(run.text for run in paragraph.runs)
-            start = text_combined.find(old)
+            combined = "".join(run.text for run in paragraph.runs)
+            start = combined.find(old)
             if start == -1:
                 break
             end = start + len(old)
             DocumentUtils._replace_across_runs(paragraph, start, end, new)
+
 
     @staticmethod
     def _replace_across_runs(paragraph, start, end, replacement):
@@ -140,7 +173,6 @@ class DocumentUtils:
 
         # If file_source is bytes or file-like object
         elif hasattr(file_source, "read"):
-            print("bbbbbbbbb")
             start_pos = file_source.tell()
             content = file_source.read()
             file_source.seek(start_pos)

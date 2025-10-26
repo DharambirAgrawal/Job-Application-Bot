@@ -6,6 +6,8 @@ from utils.data import FILETYPE, FOLDERS
 from features.gemini_api import GeminiTextGenerator
 from utils.documentUtils import DocumentUtils
 
+from helper.helper import prepare_text_for_gemini, prepare_job_desc_text_gemini, parse_gemini_json
+
 app = Flask(__name__)
 
 # Load Supabase credentials from environment
@@ -75,12 +77,15 @@ def upload_file():
         from io import BytesIO
         file_bytes = file.read()
         file_stream = BytesIO(file_bytes)
-        result = storage.upload_file(file, upload_name, folder=folder)
+        # uploading the resume or cover letter
+        result = storage.upload_file(file_stream, upload_name, folder=folder)
 
         if filetype == "resume":   
-            # file.seek(0)
+            file_stream = BytesIO(file_bytes)
             extracted_text = DocumentUtils.extract_text(file_stream)
-            print(extracted_text)
+
+            # 2️⃣ Prepare text for Gemini
+            extracted_text = prepare_text_for_gemini(extracted_text)
 
             # 3️⃣ Generate summary using Gemini
             summary_text = gemini.generate(extracted_text, "summary")
@@ -100,6 +105,48 @@ def upload_file():
     except Exception as e:
         print(e)
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/generate_coverletter", methods=["POST"])
+def generate_coverletter():
+    """
+    Generate a cover letter using the uploaded resume and job description.
+    """
+    data = request.json
+    job_description = data.get("job_description", "").strip()
+
+    if not job_description:
+        return jsonify({"error": "job_description is required."}), 400
+
+    # 1️⃣ Prepare resume text for Gemini
+    prepared_text = prepare_job_desc_text_gemini(job_description)
+
+    # getting the summary or user
+    file_stream = storage.fetch_file("resume_summary.txt", folder="summary")
+
+    summary = file_stream.read().decode("utf-8")
+
+    # 2️⃣ Generate cover letter using Gemini
+    result = gemini.generate(text=summary, second_text=job_description, task="cover_letter")
+    coverletter_data = parse_gemini_json(result)
+
+    print("Generated Cover Letter Data:", coverletter_data)
+
+    # getting coverletter format
+    coverletter_template = storage.fetch_file("coverletter.docx", folder="coverletters")
+    updated_docx_stream = DocumentUtils.update_docx_placeholders(
+        doc_source=coverletter_template,
+        replacements=coverletter_data
+    )
+
+    # return jsonify({"cover_letter": cover_letter_data}), 200
+    from flask import send_file
+    return send_file(
+    updated_docx_stream,
+    as_attachment=True,
+    download_name="cover_letter.docx",
+    mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+)
 
 
 @app.route("/api/python")
