@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
 from features.supabase_storage import SupabaseStorage  # the helper class from earlier
 from utils.data import FILETYPE, FOLDERS
@@ -10,6 +11,7 @@ from utils.documentUtils import DocumentUtils
 from helper.helper import prepare_text_for_gemini, prepare_job_desc_text_gemini, parse_gemini_json
 
 app = Flask(__name__)
+CORS(app)
 load_dotenv()
 # Load Supabase credentials from environment
 SUPABASE_ENDPOINT = os.getenv("SUPABASE_ENDPOINT")
