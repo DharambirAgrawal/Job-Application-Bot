@@ -1,5 +1,6 @@
 # Web framework
 Flask==3.0.3
+flask-cors
 
 # AWS SDK (used to connect to Supabase's S3-compatible storage)
 boto3==1.35.0
