@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
 from features.supabase_storage import SupabaseStorage  # the helper class from earlier
@@ -9,7 +10,7 @@ from utils.documentUtils import DocumentUtils
 from helper.helper import prepare_text_for_gemini, prepare_job_desc_text_gemini, parse_gemini_json
 
 app = Flask(__name__)
-
+load_dotenv()
 # Load Supabase credentials from environment
 SUPABASE_ENDPOINT = os.getenv("SUPABASE_ENDPOINT")
 SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET")
@@ -25,8 +26,11 @@ storage = SupabaseStorage(
 )
 
 # Initialize gemini
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+print("GEMINI_API_KEY:", GEMINI_API_KEY)
+print("Supabase Endpoint:", SUPABASE_ENDPOINT)
 
-gemini = GeminiTextGenerator(api_key=os.environ.get("GEMINI_API_KEY"))
+gemini = GeminiTextGenerator(api_key=GEMINI_API_KEY)
 
 @app.route("/api/upload", methods=["POST"])
 def upload_file():
