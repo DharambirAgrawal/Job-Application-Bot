@@ -27,9 +27,6 @@ storage = SupabaseStorage(
 
 # Initialize gemini
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-print("GEMINI_API_KEY:", GEMINI_API_KEY)
-print("Supabase Endpoint:", SUPABASE_ENDPOINT)
-
 gemini = GeminiTextGenerator(api_key=GEMINI_API_KEY)
 
 @app.route("/api/upload", methods=["POST"])
