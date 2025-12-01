@@ -152,6 +152,36 @@ def generate_coverletter():
 )
 
 
+@app.route("/api/convert_to_pdf", methods=["POST"])
+def convert_to_pdf():
+    """
+    Convert an uploaded DOCX file to PDF.
+    """
+    if "file" not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files["file"]
+    if not file or file.filename == "":
+        return jsonify({"error": "No file uploaded"}), 400
+
+    if not file.filename.lower().endswith(".docx"):
+        return jsonify({"error": "Only .docx files are allowed"}), 400
+
+    try:
+        pdf_stream = DocumentUtils.convert_docx_to_pdf(file)
+        
+        from flask import send_file
+        return send_file(
+            pdf_stream,
+            as_attachment=True,
+            download_name=f"{os.path.splitext(file.filename)[0]}.pdf",
+            mimetype="application/pdf"
+        )
+    except Exception as e:
+        print(e)
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/python")
 def hello_world():
     return f"<p>Hello, World!</p>"
@@ -160,4 +190,8 @@ def hello_world():
 @app.route("/api/hello")
 def hello():
     return "<p>Hello again!</p>"
+
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=5000)
 

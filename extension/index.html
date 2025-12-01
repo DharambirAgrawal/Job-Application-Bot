@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>React Extension Test Page - Job Assistant</title>
+    
+    <style>
+     
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .status-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+        
+        .status-indicator.loading {
+            background: #f59e0b;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        .status-indicator.error {
+            background: #ef4444;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card h2 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+        
+        .job-description {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            line-height: 1.8;
+            user-select: text;
+            cursor: text;
+        }
+        
+        .job-description h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .job-description ul {
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        
+        .job-description li {
+            margin: 5px 0;
+        }
+        
+        .instructions {
+            background: #fef3c7;
+            border: 2px solid #fbbf24;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions h3 {
+            color: #92400e;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .instructions ol {
+            margin-left: 20px;
+            color: #78350f;
+        }
+        
+        .instructions li {
+            margin: 8px 0;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .test-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .test-button.primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .test-button.primary:hover {
+            background: #5568d3;
+        }
+        
+        .test-button.secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .test-button.secondary:hover {
+            background: #d1d5db;
+        }
+        
+        .config-info {
+            background: #ede9fe;
+            border: 2px solid #a78bfa;
+            padding: 20px;
+            border-radius: 12px;
+        }
+        
+        .config-info h3 {
+            color: #5b21b6;
+            margin-bottom: 10px;
+        }
+        
+        .config-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd6fe;
+        }
+        
+        .config-row:last-child {
+            border-bottom: none;
+        }
+        
+        .config-label {
+            font-weight: 500;
+            color: #6d28d9;
+        }
+        
+        .config-value {
+            font-family: 'Courier New', monospace;
+            color: #4c1d95;
+            word-break: break-all;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .highlight-box {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        
+        .highlight-box strong {
+            color: #1e40af;
+        }
+
+        #test-results {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            min-height: 100px;
+            font-family: monospace;
+            font-size: 12px;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="header">
+            <h1>🧪 React Extension Test Environment</h1>
+            <p>Test your Job Assistant React extension with HMR (Hot Module Replacement)</p>
+        </div>
+        
+        <div class="status-bar">
+            <h3 style="margin-bottom: 15px;">System Status</h3>
+            <div class="status-item">
+                <div class="status-indicator" id="extension-status"></div>
+                <span><strong>React App:</strong> <span id="extension-loaded-text">Checking...</span></span>
+            </div>
+            <div class="status-item">
+                <div class="status-indicator loading" id="api-status"></div>
+                <span><strong>Backend API:</strong> <span id="api-status-text">Will test when extension loads...</span></span>
+            </div>
+            <div class="status-item">
+                <div class="status-indicator" id="config-status"></div>
+                <span><strong>Environment:</strong> <span id="config-env-text">Loading...</span></span>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 How to Test the React Extension</h3>
+            <ol>
+                <li><strong>Start dev server:</strong> Run <code>npm run dev</code> in the extension folder</li>
+                <li><strong>The React app loads automatically</strong> in this page</li>
+                <li><strong>Select the job description text</strong> below (click and drag)</li>
+                <li><strong>Watch the menu appear automatically</strong> after 0.2 seconds! ✨</li>
+                <li><strong>Click "Generate Cover Letter"</strong> to test API</li>
+                <li><strong>Make changes to code</strong> - they'll hot-reload instantly!</li>
+            </ol>
+            <div style="background: rgba(102, 126, 234, 0.1); padding: 10px; border-radius: 8px; margin-top: 10px;">
+                <strong>💡 Pro Tip:</strong> Keep this page open while developing. Changes appear instantly with HMR!
+            </div>
+        </div>
+        
+        <div class="content-grid">
+            <div class="card">
+                <h2>📄 Sample Job Description</h2>
+                <p style="margin-bottom: 15px; color: #6b7280; font-size: 14px;">
+                    ✨ <strong>NEW:</strong> Just select the text below and the menu will appear automatically!
+                </p>
+                <div class="job-description" id="job-description">
+                    <h3>Senior Full Stack Developer</h3>
+                    <p><strong>Company:</strong> TechCorp Inc.</p>
+                    <p><strong>Location:</strong> Remote</p>
+                    <p><strong>Salary:</strong> $120k - $180k</p>
+                    
+                    <p style="margin-top: 15px;"><strong>Job Description:</strong></p>
+                    <p>We are seeking a talented Senior Full Stack Developer to join our dynamic team. The ideal candidate will have extensive experience building scalable web applications using modern technologies like React, Node.js, and cloud platforms.</p>
+                    
+                    <p style="margin-top: 10px;"><strong>Requirements:</strong></p>
+                    <ul>
+                        <li>5+ years of experience with JavaScript, React, and Node.js</li>
+                        <li>Strong understanding of RESTful APIs and microservices architecture</li>
+                        <li>Experience with cloud platforms (AWS, GCP, or Azure)</li>
+                        <li>Proficiency in SQL and NoSQL databases</li>
+                        <li>Excellent problem-solving and communication skills</li>
+                        <li>Bachelor's degree in Computer Science or equivalent experience</li>
+                    </ul>
+                    
+                    <p style="margin-top: 10px;"><strong>Responsibilities:</strong></p>
+                    <ul>
+                        <li>Design and develop high-quality, scalable web applications</li>
+                        <li>Collaborate with cross-functional teams to define and implement features</li>
+                        <li>Write clean, maintainable, and well-documented code</li>
+                        <li>Mentor junior developers and conduct code reviews</li>
+                        <li>Stay up-to-date with emerging technologies and industry trends</li>
+                    </ul>
+                </div>
+                
+                <div class="button-group">
+                    <button class="test-button primary" onclick="selectJobDescription()">
+                        Select This Text
+                    </button>
+                    <button class="test-button secondary" onclick="clearSelection()">
+                        Clear Selection
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>⚙️ Configuration & Tests</h2>
+                <div class="config-info">
+                    <h3>Current Settings</h3>
+                    <div class="config-row">
+                        <span class="config-label">Environment:</span>
+                        <span class="config-value" id="config-env">Loading...</span>
+                    </div>
+                    <div class="config-row">
+                        <span class="config-label">API Base URL:</span>
+                        <span class="config-value" id="config-api">Loading...</span>
+                    </div>
+                </div>
+                
+                <div class="highlight-box">
+                    <strong>💡 Tip:</strong> Edit <code>src/config/index.js</code> to switch environments. Changes hot-reload!
+                </div>
+                
+                <h3 style="margin-top: 25px; margin-bottom: 10px;">📊 Test Log</h3>
+                <div id="test-results">
+                    <div style="color: #6b7280;">Waiting for extension to load...</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>🚀 Development Workflow</h2>
+            <div class="content-grid">
+                <div>
+                    <h3 style="font-size: 16px; margin-bottom: 10px;">For Vite Dev Server:</h3>
+                    <ol style="margin-left: 20px; color: #4b5563;">
+                        <li>Run <code>npm run dev</code> in terminal</li>
+                        <li>Open this page (http://localhost:5173)</li>
+                        <li>Test all features with HMR</li>
+                        <li>Make code changes - see instant updates!</li>
+                        <li>When ready, run <code>npm run build</code></li>
+                        <li>Load dist/ folder in Chrome to test as extension</li>
+                    </ol>
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; margin-bottom: 10px;">For Chrome Extension:</h3>
+                    <ol style="margin-left: 20px; color: #4b5563;">
+                        <li>Run <code>npm run build</code></li>
+                        <li>Go to <code>chrome://extensions/</code></li>
+                        <li>Enable "Developer mode"</li>
+                        <li>Click "Load unpacked"</li>
+                        <li>Select the <code>dist</code> folder</li>
+                        <li>Visit any website to test the extension!</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>💡 The React floating button should appear in the bottom-right corner</p>
+            <p style="margin-top: 5px;">Built with React 19 + Vite + Tailwind CSS v4 • Hot Module Replacement enabled</p>
+        </div>
+    </div>
+    
+    <!-- React app will inject here -->
+    <div id="root"></div>
+    
+    <!-- Vite dev server script -->
+    <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Test page utilities -->
+    <script>
+        function selectJobDescription() {
+            const jobDesc = document.getElementById('job-description');
+            const range = document.createRange();
+            range.selectNodeContents(jobDesc);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            logTest('✅ Job description text selected (' + selection.toString().length + ' characters)');
+        }
+        
+        function clearSelection() {
+            window.getSelection().removeAllRanges();
+            logTest('🔄 Selection cleared');
+        }
+        
+        function logTest(message) {
+            const resultsDiv = document.getElementById('test-results');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.style.marginBottom = '5px';
+            logEntry.innerHTML = `<span style="color: #6b7280;">[${timestamp}]</span> ${message}`;
+            resultsDiv.appendChild(logEntry);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        
+        function updateStatus(elementId, success, text) {
+            const indicator = document.getElementById(elementId);
+            if (indicator) {
+                indicator.className = 'status-indicator';
+                if (!success) {
+                    indicator.classList.add('error');
+                }
+            }
+            
+            const textId = elementId.replace('-status', '-status-text');
+            const textElement = document.getElementById(textId);
+            if (textElement) {
+                textElement.textContent = text;
+            }
+        }
+        
+        // Check if running on Vite dev server
+        window.addEventListener('load', () => {
+            logTest('✅ Test page loaded');
+        });
+        
+        // Listen for React app initialization
+        const checkReactApp = setInterval(() => {
+            const root = document.getElementById('root');
+            if (root && root.children.length > 0) {
+                logTest('✅ React app initialized successfully');
+                updateStatus('extension-status', true, 'Loaded');
+                
+                setTimeout(() => {
+                    logTest('📍 React extension is running');
+                    logTest('💡 Select text above to test auto-show feature');
+                }, 1000);
+                
+                clearInterval(checkReactApp);
+            }
+        }, 500);
+        
+        // Stop checking after 10 seconds
+        setTimeout(() => {
+            clearInterval(checkReactApp);
+            const root = document.getElementById('root');
+            if (!root || root.children.length === 0) {
+                logTest('❌ React app did not load');
+                logTest('💡 Make sure dev server is running: npm run dev');
+                updateStatus('extension-status', false, 'Not loaded');
+            }
+        }, 10000);
+        
+        // Monitor selection changes
+        document.addEventListener('selectionchange', () => {
+            const selection = window.getSelection().toString();
+            if (selection.length > 100) {
+                logTest(`📝 Text selected (${selection.length} characters) - Menu should appear!`);
+            }
+        });
+    </script>
+</body>
+</html>

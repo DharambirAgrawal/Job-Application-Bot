@@ -1,0 +1,77 @@
+/**
+ * Global styles and Tailwind imports for Job Application Assistant
+ */
+
+@import "tailwindcss";
+
+/* Custom animations */
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Utility classes */
+.animate-slideInRight {
+  animation: slideInRight 0.3s ease;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Custom z-index values for extension layers */
+.z-999997 {
+  z-index: 999997;
+}
+
+.z-999999 {
+  z-index: 999999;
+}
+
+.z-1000000 {
+  z-index: 1000000;
+}
+
+.z-1000001 {
+  z-index: 1000001;
+}
+
+/* Ensure the extension UI doesn't inherit page styles */
+/* #root {
+  all: initial;
+  * {
+    all: unset;
+  }
+} */
+
+/* Reset font for the extension */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

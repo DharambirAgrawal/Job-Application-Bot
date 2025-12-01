@@ -136,6 +136,69 @@ class DocumentUtils:
         end_run.text = suffix
 
     @staticmethod
+    def convert_docx_to_pdf(docx_source):
+        """
+        Convert DOCX to PDF using LibreOffice.
+        
+        Args:
+            docx_source: path to DOCX file, bytes, or file-like object
+            
+        Returns:
+            BytesIO with PDF content
+        """
+        import subprocess
+        import tempfile
+        import os
+        
+        # Create a temporary directory
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_docx_path = os.path.join(temp_dir, "input.docx")
+            
+            # Write input to temp file
+            if isinstance(docx_source, (str, Path)):
+                with open(docx_source, "rb") as f:
+                    with open(temp_docx_path, "wb") as temp_f:
+                        temp_f.write(f.read())
+            elif hasattr(docx_source, "read"):
+                # Ensure we are at the start if it's a stream
+                if hasattr(docx_source, "seek"):
+                    docx_source.seek(0)
+                with open(temp_docx_path, "wb") as temp_f:
+                    temp_f.write(docx_source.read())
+            else:
+                # Assume bytes
+                with open(temp_docx_path, "wb") as temp_f:
+                    temp_f.write(docx_source)
+            
+            # Run LibreOffice conversion
+            # --headless: no GUI
+            # --convert-to pdf: output format
+            # --outdir: output directory
+            try:
+                subprocess.run(
+                    ["libreoffice", "--headless", "--convert-to", "pdf", temp_docx_path, "--outdir", temp_dir],
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                )
+            except subprocess.CalledProcessError as e:
+                raise RuntimeError(f"LibreOffice conversion failed: {e.stderr.decode()}")
+            except FileNotFoundError:
+                raise RuntimeError("LibreOffice not found. Please install it.")
+            
+            # Read the output PDF
+            # LibreOffice names the output file same as input but with .pdf extension
+            temp_pdf_path = os.path.join(temp_dir, "input.pdf")
+            
+            if not os.path.exists(temp_pdf_path):
+                raise RuntimeError("PDF file was not generated.")
+                
+            with open(temp_pdf_path, "rb") as f:
+                pdf_content = f.read()
+                
+            return io.BytesIO(pdf_content)
+
+    @staticmethod
     def extract_text(file_source):
         """
         Extract plain text from DOCX or PDF.

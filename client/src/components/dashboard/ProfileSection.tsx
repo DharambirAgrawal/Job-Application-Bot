@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { buildApiUrl } from "@/utils/api";
 
 export default function ProfileSection() {
   const [resume, setResume] = useState<File | null>(null);
@@ -9,13 +10,19 @@ export default function ProfileSection() {
   const [isSubmittingResume, setIsSubmittingResume] = useState(false);
   const [isSubmittingCover, setIsSubmittingCover] = useState(false);
 
-  const [message, setMessage] = useState<{ type: "success" | "error" | null; text: string }>({
+  const [message, setMessage] = useState<{
+    type: "success" | "error" | null;
+    text: string;
+  }>({
     type: null,
     text: "",
   });
 
   // --- File Validation ---
-  const validateFile = (file: File, type: "resume" | "coverLetter"): boolean => {
+  const validateFile = (
+    file: File,
+    type: "resume" | "coverLetter"
+  ): boolean => {
     const allowedResume = [".pdf", ".docx"];
     const allowedCover = [".docx"];
     const ext = file.name.toLowerCase().split(".").pop() || "";
@@ -26,7 +33,10 @@ export default function ProfileSection() {
     }
 
     if (type === "resume" && !allowedResume.includes(`.${ext}`)) {
-      setMessage({ type: "error", text: "Resume must be a .pdf or .docx file." });
+      setMessage({
+        type: "error",
+        text: "Resume must be a .pdf or .docx file.",
+      });
       return false;
     }
 
@@ -34,7 +44,10 @@ export default function ProfileSection() {
     return true;
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "resume" | "coverLetter") => {
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    type: "resume" | "coverLetter"
+  ) => {
     const file = e.target.files?.[0] || null;
     if (!file) return;
 
@@ -51,13 +64,17 @@ export default function ProfileSection() {
   };
 
   // --- Upload Helper ---
-  const uploadFile = async (file: File, filetype: string, foldername: string) => {
+  const uploadFile = async (
+    file: File,
+    filetype: string,
+    foldername: string
+  ) => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("filetype", filetype);
     formData.append("foldername", foldername);
 
-    const response = await fetch("/api/upload", {
+    const response = await fetch(buildApiUrl("/api/upload"), {
       method: "POST",
       body: formData,
     });
@@ -83,7 +100,10 @@ export default function ProfileSection() {
       setResume(null);
       (e.target as HTMLFormElement).reset();
     } catch (error: any) {
-      setMessage({ type: "error", text: error.message || "Failed to upload resume" });
+      setMessage({
+        type: "error",
+        text: error.message || "Failed to upload resume",
+      });
       console.error("Resume upload error:", error);
     } finally {
       setIsSubmittingResume(false);
@@ -100,12 +120,18 @@ export default function ProfileSection() {
 
     try {
       const data = await uploadFile(coverLetter, "coverletter", "coverletters");
-      setMessage({ type: "success", text: "Cover letter uploaded successfully!" });
+      setMessage({
+        type: "success",
+        text: "Cover letter uploaded successfully!",
+      });
       console.log("Cover letter upload:", data);
       setCoverLetter(null);
       (e.target as HTMLFormElement).reset();
     } catch (error: any) {
-      setMessage({ type: "error", text: error.message || "Failed to upload cover letter" });
+      setMessage({
+        type: "error",
+        text: error.message || "Failed to upload cover letter",
+      });
       console.error("Cover letter upload error:", error);
     } finally {
       setIsSubmittingCover(false);
@@ -132,7 +158,10 @@ export default function ProfileSection() {
       {/* Resume Upload */}
       <form onSubmit={handleResumeSubmit} className="space-y-4">
         <div>
-          <label htmlFor="resume" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="resume"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Resume (.pdf or .docx)
           </label>
           <input
@@ -143,7 +172,11 @@ export default function ProfileSection() {
             className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 
                        file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
           />
-          {resume && <p className="mt-2 text-sm text-gray-600">Selected: {resume.name}</p>}
+          {resume && (
+            <p className="mt-2 text-sm text-gray-600">
+              Selected: {resume.name}
+            </p>
+          )}
         </div>
         <button
           type="submit"
@@ -158,7 +191,10 @@ export default function ProfileSection() {
       {/* Cover Letter Upload */}
       <form onSubmit={handleCoverLetterSubmit} className="space-y-4">
         <div>
-          <label htmlFor="coverLetter" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="coverLetter"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Cover Letter (.docx only)
           </label>
           <input
@@ -169,7 +205,11 @@ export default function ProfileSection() {
             className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 
                        file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer"
           />
-          {coverLetter && <p className="mt-2 text-sm text-gray-600">Selected: {coverLetter.name}</p>}
+          {coverLetter && (
+            <p className="mt-2 text-sm text-gray-600">
+              Selected: {coverLetter.name}
+            </p>
+          )}
         </div>
         <button
           type="submit"
@@ -177,7 +217,9 @@ export default function ProfileSection() {
           className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 
                      disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
         >
-          {isSubmittingCover ? "Uploading Cover Letter..." : "Submit Cover Letter"}
+          {isSubmittingCover
+            ? "Uploading Cover Letter..."
+            : "Submit Cover Letter"}
         </button>
       </form>
     </div>

@@ -1,0 +1,36 @@
+/**
+ * Component-specific styles for the Job Application Assistant
+ * Most styling is done via Tailwind CSS classes
+ */
+
+/* Ensure smooth transitions for all interactive elements */
+button, a {
+  transition: all 0.2s ease;
+}
+
+/* Prevent text selection in UI elements */
+button {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Custom scrollbar for modals */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

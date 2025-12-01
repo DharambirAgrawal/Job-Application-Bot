@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { buildApiUrl } from "@/utils/api";
 
 export default function CoverLetterSection() {
   const [jobDescription, setJobDescription] = useState("");
@@ -25,105 +26,102 @@ export default function CoverLetterSection() {
     }
   };
 
-//   const handleGenerate = async () => {
-//     if (!jobDescription.trim()) {
-//       alert("Please enter a job description");
-//       return;
-//     }
+  //   const handleGenerate = async () => {
+  //     if (!jobDescription.trim()) {
+  //       alert("Please enter a job description");
+  //       return;
+  //     }
 
-//     setIsGenerating(true);
+  //     setIsGenerating(true);
 
-//     try {
-//       // Dummy API call - replace with actual backend call
-//       // await new Promise(resolve => setTimeout(resolve, 2000));
+  //     try {
+  //       // Dummy API call - replace with actual backend call
+  //       // await new Promise(resolve => setTimeout(resolve, 2000));
 
-//       const response = await fetch("/api/generate_coverletter", {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//         body: JSON.stringify({
-//           job_description: jobDescription.trim(),
-//         }),
-//       });
+  //       const response = await fetch("/api/generate_coverletter", {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({
+  //           job_description: jobDescription.trim(),
+  //         }),
+  //       });
 
-//       if (!response.ok) {
-//         const err = await response.json();
-//         console.error("Error generating cover letter:", err);
-//         return
-//       } 
-//       const data = await response.json();
-//       console.log(data)
-//       console.log("Cover letter:", data.cover_letter);
-      
+  //       if (!response.ok) {
+  //         const err = await response.json();
+  //         console.error("Error generating cover letter:", err);
+  //         return
+  //       }
+  //       const data = await response.json();
+  //       console.log(data)
+  //       console.log("Cover letter:", data.cover_letter);
 
-//       // Dummy generated cover letter
-//       const dummyCoverLetter = `Dear Hiring Manager,
+  //       // Dummy generated cover letter
+  //       const dummyCoverLetter = `Dear Hiring Manager,
 
-// I am writing to express my strong interest in the position described. With my background and skills, I believe I would be an excellent fit for this role.
+  // I am writing to express my strong interest in the position described. With my background and skills, I believe I would be an excellent fit for this role.
 
-// Based on the job description you provided, I have relevant experience in the key areas mentioned. My professional background aligns well with the requirements, and I am excited about the opportunity to contribute to your team.
+  // Based on the job description you provided, I have relevant experience in the key areas mentioned. My professional background aligns well with the requirements, and I am excited about the opportunity to contribute to your team.
 
-// I am confident that my skills and passion make me a strong candidate for this position. I look forward to the opportunity to discuss how I can add value to your organization.
+  // I am confident that my skills and passion make me a strong candidate for this position. I look forward to the opportunity to discuss how I can add value to your organization.
 
-// Thank you for considering my application.
+  // Thank you for considering my application.
 
-// Best regards,
-// [Your Name]`;
+  // Best regards,
+  // [Your Name]`;
 
-//       setGeneratedCoverLetter(data.cover_letter);
-//     } catch (error) {
-//       console.error("Error generating cover letter:", error);
-//       alert("Failed to generate cover letter");
-//     } finally {
-//       setIsGenerating(false);
-//     }
-//   };
+  //       setGeneratedCoverLetter(data.cover_letter);
+  //     } catch (error) {
+  //       console.error("Error generating cover letter:", error);
+  //       alert("Failed to generate cover letter");
+  //     } finally {
+  //       setIsGenerating(false);
+  //     }
+  //   };
 
-const handleGenerate = async () => {
-  if (!jobDescription.trim()) {
-    alert("Please enter a job description");
-    return;
-  }
-
-  setIsGenerating(true);
-
-  try {
-    const response = await fetch("/api/generate_coverletter", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ job_description: jobDescription.trim() }),
-    });
-
-    if (!response.ok) {
-      const err = await response.json();
-      console.error("Error generating cover letter:", err);
+  const handleGenerate = async () => {
+    if (!jobDescription.trim()) {
+      alert("Please enter a job description");
       return;
     }
 
-    // Get the file blob from the response
-    const blob = await response.blob();
+    setIsGenerating(true);
 
-    // Create a temporary download link
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "cover_letter.docx";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    window.URL.revokeObjectURL(url);
+    try {
+      const response = await fetch(buildApiUrl("/api/generate_coverletter"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ job_description: jobDescription.trim() }),
+      });
 
-  } catch (error) {
-    console.error("Error generating cover letter:", error);
-    alert("Failed to generate cover letter");
-  } finally {
-    setIsGenerating(false);
-  }
-};
+      if (!response.ok) {
+        const err = await response.json();
+        console.error("Error generating cover letter:", err);
+        return;
+      }
 
+      // Get the file blob from the response
+      const blob = await response.blob();
+
+      // Create a temporary download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "cover_letter.docx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error generating cover letter:", error);
+      alert("Failed to generate cover letter");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleClear = () => {
     setJobDescription("");

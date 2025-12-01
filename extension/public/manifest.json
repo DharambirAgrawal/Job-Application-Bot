@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Job Application Assistant",
+  "version": "2.0.0",
+  "description": "AI-powered job application tools including cover letter generation with React UI",
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": [
+    "https://project981.pythonanywhere.com/*",
+    "https://ubiquitous-fishstick-p59p7wgq9w4c69pj-5328.app.github.dev/*",
+    "https://*.app.github.dev/*",
+    "http://localhost:*/*",
+    "http://127.0.0.1:*/*"
+  ],
+  "action": {
+    "default_title": "Job Application Assistant"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/main.jsx"],
+      "run_at": "document_end",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["src/*", "assets/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+:root {
+  color-scheme: light;
+}
+
+.docx-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 1.5rem;
+  background: #eef2ff;
+}
+
+.docx {
+  background: #ffffff;
+  color: #111827;
+  font-family: "Times New Roman", Georgia, serif;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+  border-radius: 0.5rem;
+  width: min(56.5rem, calc(100vw - 3rem));
+  min-height: 70vh;
+  overflow: hidden;
+}
+
+.docx-page {
+  padding: 2.5rem 3rem;
+  min-height: 70vh;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.docx p,
+.docx li,
+.docx td,
+.docx th,
+.docx-preview-content,
+.docx-preview-content p {
+  font-size: 12pt;
+  line-height: 1.6;
+  margin: 0 0 0.85rem;
+}
+
+.docx h1,
+.docx h2,
+.docx h3 {
+  font-weight: 600;
+  margin: 0 0 1rem;
+  color: #0f172a;
+}
+
+.docx h1 {
+  font-size: 1.8rem;
+}
+
+.docx h2 {
+  font-size: 1.4rem;
+}
+
+.docx h3 {
+  font-size: 1.2rem;
+}
+
+.docx table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.25rem 0;
+  font-size: 11pt;
+}
+
+.docx th,
+.docx td {
+  border: 1px solid #d1d5db;
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+}
+
+.docx ul,
+.docx ol,
+.docx-preview-content ul,
+.docx-preview-content ol {
+  margin: 0.5rem 0 1.25rem 1.5rem;
+  padding-left: 1rem;
+}
+
+.docx li,
+.docx-preview-content li {
+  margin-bottom: 0.45rem;
+}
+
+.docx strong,
+.docx-preview-content strong {
+  font-weight: 600;
+}
+
+.docx em,
+.docx-preview-content em {
+  font-style: italic;
+}
+
+.docx a,
+.docx-preview-content a {
+  color: #4338ca;
+  text-decoration: underline;
+}
+
+.docx hr,
+.docx-preview-content hr {
+  border: none;
+  border-top: 1px solid #e2e8f0;
+  margin: 2rem 0;
+}
+
+@media (max-width: 768px) {
+  .docx-wrapper {
+    padding: 1rem;
+  }
+
+  .docx {
+    width: 100%;
+    border-radius: 0.35rem;
+  }
+
+  .docx-page {
+    padding: 1.75rem;
+  }
+}
