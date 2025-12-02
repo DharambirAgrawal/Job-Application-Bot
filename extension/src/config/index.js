@@ -40,6 +40,7 @@ const CONFIG = {
       upload: "/api/upload",
       hello: "/api/hello",
       convertToPdf: "/api/convert_to_pdf",
+      convertHtmlToPdf: "/api/html_to_pdf",
     },
     production: {
       baseUrl: "https://project981.pythonanywhere.com",
@@ -47,6 +48,7 @@ const CONFIG = {
       upload: "/api/upload",
       hello: "/api/hello",
       convertToPdf: "/api/convert_to_pdf",
+      convertHtmlToPdf: "/api/html_to_pdf",
     },
   },
 

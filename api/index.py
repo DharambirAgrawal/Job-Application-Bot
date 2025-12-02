@@ -182,6 +182,45 @@ def convert_to_pdf():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/html_to_pdf", methods=["POST"])
+def html_to_pdf():
+    """
+    Convert HTML content to PDF using Playwright (headless Chromium).
+    Expects JSON with:
+    - html (required): The HTML content to convert.
+    """
+    data = request.json
+    html_content = data.get("html", "")
+
+    if not html_content:
+        return jsonify({"error": "html content is required"}), 400
+
+    try:
+        from playwright.sync_api import sync_playwright
+        from io import BytesIO
+
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+            page.set_content(html_content, wait_until="networkidle")
+            pdf_bytes = page.pdf(format="Letter", print_background=True)
+            browser.close()
+
+        pdf_stream = BytesIO(pdf_bytes)
+        pdf_stream.seek(0)
+
+        from flask import send_file
+        return send_file(
+            pdf_stream,
+            as_attachment=True,
+            download_name="cover_letter.pdf",
+            mimetype="application/pdf"
+        )
+    except Exception as e:
+        print(f"Playwright error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/python")
 def hello_world():
     return f"<p>Hello, World!</p>"

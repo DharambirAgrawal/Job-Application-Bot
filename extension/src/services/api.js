@@ -121,6 +121,38 @@ class APIService {
     }
   }
 
+  static async convertHtmlToPdf(htmlContent) {
+    try {
+      const endpoint = getApiEndpoint("convertHtmlToPdf");
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          html: htmlContent,
+        }),
+      });
+
+      if (!response.ok) {
+        let errorMessage = "Failed to convert HTML to PDF";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      return response.blob();
+    } catch (error) {
+      console.error("API error while converting HTML to PDF", error);
+      throw error;
+    }
+  }
+
   static async testConnection() {
     try {
       const endpoint = getApiEndpoint("hello");

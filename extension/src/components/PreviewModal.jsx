@@ -38,7 +38,30 @@ const PreviewModal = ({ isOpen, onClose, docxBlob, onDownloadComplete }) => {
       if (format === "docx") {
         downloadFile(docxBlob, "cover-letter.docx");
       } else if (format === "pdf") {
-        const pdfBlob = await APIService.convertToPdf(docxBlob);
+        if (!htmlContent) {
+          throw new Error("Preview content not available for PDF generation");
+        }
+
+        // Inject Google Fonts for signature fallback
+        // We use 'Alex Brush' as a close alternative to 'Brush Script MT'
+        // We also define a @font-face alias so that 'Brush Script MT' resolves to the remote font
+        const fontFix = `
+          <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&display=swap" rel="stylesheet">
+          <style>
+            @font-face {
+              font-family: 'Brush Script MT';
+              src: local('Alex Brush'), url('https://fonts.gstatic.com/s/alexbrush/v22/RZZlgtuhnbJt2Qb6iF_I3w.woff2') format('woff2');
+            }
+            /* Also force replacement for variants just in case */
+            [style*="Brush Script MT"], [style*="Brush Script Std"], [style*="Brush Script"] {
+              font-family: 'Alex Brush', 'Brush Script MT', cursive !important;
+            }
+          </style>
+        `;
+
+        const pdfBlob = await APIService.convertHtmlToPdf(
+          fontFix + htmlContent
+        );
         if (!pdfBlob || pdfBlob.size === 0) {
           throw new Error("Generated PDF is empty");
         }
