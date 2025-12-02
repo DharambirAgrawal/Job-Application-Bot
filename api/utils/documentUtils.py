@@ -1,9 +1,12 @@
 import io
 from pathlib import Path
+import tempfile
 from docx import Document
 from docx.text.paragraph import Paragraph
 import PyPDF2
-
+import subprocess
+import tempfile
+import os
 class DocumentUtils:
     """Utility class for working with DOCX and PDF files."""
 
@@ -135,68 +138,70 @@ class DocumentUtils:
             paragraph.runs[i].text = ""
         end_run.text = suffix
 
-    @staticmethod
-    def convert_docx_to_pdf(docx_source):
-        """
-        Convert DOCX to PDF using LibreOffice.
+    # @staticmethod
+    # def convert_docx_to_pdf(docx_source):
+    #     """
+    #     Convert DOCX to PDF using LibreOffice.
         
-        Args:
-            docx_source: path to DOCX file, bytes, or file-like object
+    #     Args:
+    #         docx_source: path to DOCX file, bytes, or file-like object
             
-        Returns:
-            BytesIO with PDF content
-        """
-        import subprocess
-        import tempfile
-        import os
+    #     Returns:
+    #         BytesIO with PDF content
+    #     """
+    #     import subprocess
+    #     import tempfile
+    #     import os
         
-        # Create a temporary directory
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_docx_path = os.path.join(temp_dir, "input.docx")
+    #     # Create a temporary directory
+    #     with tempfile.TemporaryDirectory() as temp_dir:
+    #         temp_docx_path = os.path.join(temp_dir, "input.docx")
             
-            # Write input to temp file
-            if isinstance(docx_source, (str, Path)):
-                with open(docx_source, "rb") as f:
-                    with open(temp_docx_path, "wb") as temp_f:
-                        temp_f.write(f.read())
-            elif hasattr(docx_source, "read"):
-                # Ensure we are at the start if it's a stream
-                if hasattr(docx_source, "seek"):
-                    docx_source.seek(0)
-                with open(temp_docx_path, "wb") as temp_f:
-                    temp_f.write(docx_source.read())
-            else:
-                # Assume bytes
-                with open(temp_docx_path, "wb") as temp_f:
-                    temp_f.write(docx_source)
+    #         # Write input to temp file
+    #         if isinstance(docx_source, (str, Path)):
+    #             with open(docx_source, "rb") as f:
+    #                 with open(temp_docx_path, "wb") as temp_f:
+    #                     temp_f.write(f.read())
+    #         elif hasattr(docx_source, "read"):
+    #             # Ensure we are at the start if it's a stream
+    #             if hasattr(docx_source, "seek"):
+    #                 docx_source.seek(0)
+    #             with open(temp_docx_path, "wb") as temp_f:
+    #                 temp_f.write(docx_source.read())
+    #         else:
+    #             # Assume bytes
+    #             with open(temp_docx_path, "wb") as temp_f:
+    #                 temp_f.write(docx_source)
             
-            # Run LibreOffice conversion
-            # --headless: no GUI
-            # --convert-to pdf: output format
-            # --outdir: output directory
-            try:
-                subprocess.run(
-                    ["libreoffice", "--headless", "--convert-to", "pdf", temp_docx_path, "--outdir", temp_dir],
-                    check=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE
-                )
-            except subprocess.CalledProcessError as e:
-                raise RuntimeError(f"LibreOffice conversion failed: {e.stderr.decode()}")
-            except FileNotFoundError:
-                raise RuntimeError("LibreOffice not found. Please install it.")
+    #         # Run LibreOffice conversion
+    #         # --headless: no GUI
+    #         # --convert-to pdf: output format
+    #         # --outdir: output directory
+    #         try:
+    #             subprocess.run(
+    #                 ["libreoffice", "--headless", "--convert-to", "pdf", temp_docx_path, "--outdir", temp_dir],
+    #                 check=True,
+    #                 stdout=subprocess.PIPE,
+    #                 stderr=subprocess.PIPE
+    #             )
+    #         except subprocess.CalledProcessError as e:
+    #             raise RuntimeError(f"LibreOffice conversion failed: {e.stderr.decode()}")
+    #         except FileNotFoundError:
+    #             raise RuntimeError("LibreOffice not found. Please install it.")
             
-            # Read the output PDF
-            # LibreOffice names the output file same as input but with .pdf extension
-            temp_pdf_path = os.path.join(temp_dir, "input.pdf")
+    #         # Read the output PDF
+    #         # LibreOffice names the output file same as input but with .pdf extension
+    #         temp_pdf_path = os.path.join(temp_dir, "input.pdf")
             
-            if not os.path.exists(temp_pdf_path):
-                raise RuntimeError("PDF file was not generated.")
+    #         if not os.path.exists(temp_pdf_path):
+    #             raise RuntimeError("PDF file was not generated.")
                 
-            with open(temp_pdf_path, "rb") as f:
-                pdf_content = f.read()
+    #         with open(temp_pdf_path, "rb") as f:
+    #             pdf_content = f.read()
                 
-            return io.BytesIO(pdf_content)
+    #         return io.BytesIO(pdf_content)
+
+
 
     @staticmethod
     def extract_text(file_source):
@@ -263,6 +268,71 @@ class DocumentUtils:
 
         else:
             raise TypeError("file_source must be a path, bytes, or file-like object")
+
+
+
+
+
+    @staticmethod
+    def convert_docx_to_pdf(docx_source):
+        """
+        Convert DOCX to PDF using LibreOffice, with better font size consistency.
+        
+        Args:
+            docx_source: path to DOCX file, bytes, or file-like object
+            
+        Returns:
+            BytesIO with PDF content
+        """
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_docx_path = os.path.join(temp_dir, "input.docx")
+            
+            # Write input to temp file
+            if isinstance(docx_source, (str, Path)):
+                docx_source_path = Path(docx_source).resolve()
+                with open(docx_source_path, "rb") as f, open(temp_docx_path, "wb") as temp_f:
+                    temp_f.write(f.read())
+            elif hasattr(docx_source, "read"):
+                if hasattr(docx_source, "seek"):
+                    docx_source.seek(0)
+                with open(temp_docx_path, "wb") as temp_f:
+                    temp_f.write(docx_source.read())
+            else:
+                with open(temp_docx_path, "wb") as temp_f:
+                    temp_f.write(docx_source)
+            
+            # Run LibreOffice conversion with better PDF filter
+            try:
+                subprocess.run(
+                    [
+                        "libreoffice",
+                        "--headless",
+                        "--nologo",
+                        "--nolockcheck",
+                        "--convert-to", "pdf:writer_pdf_Export",
+                        temp_docx_path,
+                        "--outdir", temp_dir
+                    ],
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE
+                )
+            except subprocess.CalledProcessError as e:
+                raise RuntimeError(f"LibreOffice conversion failed: {e.stderr.decode()}")
+            except FileNotFoundError:
+                raise RuntimeError("LibreOffice not found. Please install it.")
+            
+            temp_pdf_path = os.path.join(temp_dir, "input.pdf")
+            if not os.path.exists(temp_pdf_path):
+                raise RuntimeError("PDF file was not generated.")
+            
+            with open(temp_pdf_path, "rb") as f:
+                pdf_content = f.read()
+            
+            return io.BytesIO(pdf_content)
+
+
+
 
 """
 # Update a DOCX
