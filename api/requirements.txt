@@ -1,0 +1,21 @@
+# Web framework
+Flask==3.0.3
+flask-cors
+
+# AWS SDK (used to connect to Supabase's S3-compatible storage)
+boto3==1.35.0
+botocore==1.35.0
+
+# For safely handling file uploads
+Werkzeug==3.0.3
+
+# For environment variable management (optional but recommended)
+python-dotenv==1.0.1
+
+# for controlling documents
+python-docx>=0.8.11
+PyPDF2
+
+# Google Generative AI SDK
+google-generativeai==0.7.2
+
