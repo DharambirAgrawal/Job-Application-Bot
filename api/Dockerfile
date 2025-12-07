@@ -2,12 +2,16 @@
 FROM python:3.13-slim
 
 # Install system dependencies for Playwright/Chromium
+# Install Chromium deps + fonts
 RUN apt-get update && apt-get install -y \
     libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 \
     libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 \
     libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 \
-    libcairo2 libasound2 wget curl unzip git \
+    libcairo2 libasound2 fonts-liberation fonts-noto \
+    fonts-dejavu fonts-freefont-ttf fonts-droid-fallback \
+    wget curl unzip git \
     && rm -rf /var/lib/apt/lists/*
+
 
 # Set work directory
 WORKDIR /app
