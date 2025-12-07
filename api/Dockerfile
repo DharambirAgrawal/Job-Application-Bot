@@ -1,45 +1,13 @@
-# ---- Base image ----
+# Use official Python slim image
 FROM python:3.13-slim
 
-# ---- Set working directory ----
-WORKDIR /app
-
-
-
-# ---- Install system dependencies ----
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget unzip curl gnupg ca-certificates fonts-liberation fonts-noto fonts-dejavu \
+# Install system dependencies for Playwright/Chromium
+RUN apt-get update && apt-get install -y \
     libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 \
     libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 \
     libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 \
-    libcairo2 libasound2 fontconfig locales \
+    libcairo2 libasound2 wget curl unzip git \
     && rm -rf /var/lib/apt/lists/*
-
-# ---- Set locale for proper text rendering ----
-RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
-
-# ---- Install Calibri font manually ----
-RUN mkdir -p /usr/share/fonts/truetype/msttcorefonts \
-    && wget -O /tmp/calibri.zip "https://github.com/alcortesm/fonts/raw/master/ttf/calibri.zip" \
-    && unzip /tmp/calibri.zip -d /usr/share/fonts/truetype/msttcorefonts \
-    && fc-cache -f -v \
-    && rm /tmp/calibri.zip
-
-# ---- Copy Python requirements ----
-COPY requirements.txt .
-
-# ---- Install Python dependencies ----
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
-
-# ---- Install Playwright and Chromium ----
-RUN pip install playwright
-RUN playwright install chromium
-
-# ---- Copy app code ----
-COPY . .
-
-# ---- Set working directory to your code folder ----
 
 # Set work directory
 WORKDIR /app
@@ -47,10 +15,31 @@ WORKDIR /app
 # Copy requirements
 COPY requirements.txt .
 
-# ---- Expose Flask port ----
+# Upgrade pip and install Python dependencies
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+# Install Chromium deps + fonts
+RUN apt-get update && apt-get install -y \
+    libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 \
+    libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 \
+    libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 \
+    libcairo2 libasound2 fonts-liberation fonts-noto \
+    fonts-woff2 fonts-dejavu && \
+    rm -rf /var/lib/apt/lists/*
+
+
+# Install Playwright browsers
+RUN playwright install chromium
+
+# Copy all source code
+COPY . .
+
+# Expose Flask default port
 EXPOSE 5000
 
-# ---- Start the Flask app ----
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app", "--workers", "2", "--threads", "4"]
+# Run the app with Gunicorn
+CMD ["gunicorn", "index:app", "--bind", "0.0.0.0:5000", "--workers", "1"]
 
 
+# sudo apt install -y     libnss3 libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libdrm2     libxkbcommon-x11-0 libxcomposite1 libxdamage1 libxrandr2     libgbm1 libpango-1.0-0 libgtk-4-1 libgraphene-1.0-0     fonts-woff2 libvpx9 libavif16 libwebpmux3     libenchant-2-2 libx264 libflite1 libgstreamer-gl1.0-0     libgstreamer-plugins-base1.0-0
