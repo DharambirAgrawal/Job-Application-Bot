@@ -4,6 +4,8 @@ FROM python:3.13-slim
 # ---- Set working directory ----
 WORKDIR /app
 
+
+
 # ---- Install system dependencies ----
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget unzip curl gnupg ca-certificates fonts-liberation fonts-noto fonts-dejavu \
@@ -24,7 +26,7 @@ RUN mkdir -p /usr/share/fonts/truetype/msttcorefonts \
     && rm /tmp/calibri.zip
 
 # ---- Copy Python requirements ----
-COPY api/requirements.txt ./requirements.txt
+COPY requirements.txt .
 
 # ---- Install Python dependencies ----
 RUN pip install --upgrade pip
@@ -35,13 +37,20 @@ RUN pip install playwright
 RUN playwright install chromium
 
 # ---- Copy app code ----
-COPY api/ ./api/
+COPY . .
 
 # ---- Set working directory to your code folder ----
-WORKDIR /app/api
+
+# Set work directory
+WORKDIR /app
+
+# Copy requirements
+COPY requirements.txt .
 
 # ---- Expose Flask port ----
 EXPOSE 5000
 
 # ---- Start the Flask app ----
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app", "--workers", "2", "--threads", "4"]
+
+
