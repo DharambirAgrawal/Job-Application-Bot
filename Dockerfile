@@ -23,6 +23,23 @@ COPY requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
+RUN apt-get update && apt-get install -y \
+    ttf-mscorefonts-installer \
+    fonts-liberation fonts-noto fonts-dejavu && \
+    fc-cache -f -v \
+    && rm -rf /var/lib/apt/lists/*
+
+
+# Install Chromium deps + fonts
+RUN apt-get update && apt-get install -y \
+    libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 \
+    libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 \
+    libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 \
+    libcairo2 libasound2 fonts-liberation fonts-noto \
+    fonts-woff2 fonts-dejavu && \
+    rm -rf /var/lib/apt/lists/*
+
+
 # Install Playwright browsers
 RUN playwright install chromium
 

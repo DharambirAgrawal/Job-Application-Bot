@@ -1,6 +1,6 @@
 const CONFIG = {
   // Change this to switch environments
-  ENVIRONMENT: "production", // 'development' or 'production'
+  ENVIRONMENT: "development", // 'development' or 'production'
 
   // API endpoints for different environments
   API_ENDPOINTS: {
