@@ -1,6 +1,6 @@
 const CONFIG = {
   // Change this to switch environments
-  ENVIRONMENT: "development", // 'development' or 'production'
+  ENVIRONMENT: "production", // 'development' or 'production'
 
   // API endpoints for different environments
   API_ENDPOINTS: {
@@ -13,7 +13,7 @@ const CONFIG = {
       convertHtmlToPdf: "/api/html_to_pdf",
     },
     production: {
-      baseUrl: "https://project981.pythonanywhere.com",
+      baseUrl: "https://job-application-bot-mw1m.onrender.com",
       generateCoverLetter: "/api/generate_coverletter",
       upload: "/api/upload",
       hello: "/api/hello",
