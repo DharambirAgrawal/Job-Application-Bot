@@ -33,4 +33,4 @@ COPY . .
 EXPOSE 5000
 
 # Run the app with Gunicorn
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:5000", "--workers", "1"]
+CMD ["gunicorn", "index:app", "--bind", "0.0.0.0:5000", "--workers", "1"]
