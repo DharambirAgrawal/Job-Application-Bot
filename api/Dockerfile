@@ -25,14 +25,8 @@ RUN apt-get update && apt-get install -y \
     libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 \
     libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 \
     libcairo2 libasound2 fonts-liberation fonts-noto \
-    fonts-woff2 fonts-dejavu && \
-    rm -rf /var/lib/apt/lists/*
-
-
-RUN apt-get update && apt-get install -y \
-    ttf-mscorefonts-installer \
-    fonts-liberation fonts-noto fonts-dejavu && \
-    fc-cache -f -v \
+    fonts-dejavu ttf-mscorefonts-installer \
+    && fc-cache -f -v \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Playwright browsers
