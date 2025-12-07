@@ -1,36 +1,6 @@
-/**
- * Configuration management for the Chrome Extension
- * Handles environment switching between development and production
- * @module config
- */
-
-/**
- * Main configuration object
- * Change ENVIRONMENT to switch between 'development' and 'production'
- */
-const detectEnvironment = () => {
-  try {
-    const metaEnv = typeof import.meta !== "undefined" ? import.meta.env : null;
-    const explicitEnv = metaEnv && metaEnv.VITE_APP_ENV;
-    if (explicitEnv && ["development", "production"].includes(explicitEnv)) {
-      return explicitEnv;
-    }
-    const mode = metaEnv && metaEnv.MODE;
-    if (mode === "development") {
-      return "development";
-    }
-  } catch (error) {
-    console.warn(
-      "Unable to detect environment from Vite. Falling back to production.",
-      error
-    );
-  }
-  return "production";
-};
-
 const CONFIG = {
   // Change this to switch environments
-  ENVIRONMENT: detectEnvironment(), // 'development' or 'production'
+  ENVIRONMENT: "development", // 'development' or 'production'
 
   // API endpoints for different environments
   API_ENDPOINTS: {
@@ -97,11 +67,6 @@ export const isFeatureEnabled = (featureName) => {
   return CONFIG.FEATURES[featureName] || false;
 };
 
-/**
- * Get UI configuration value
- * @param {string} key - Configuration key
- * @returns {*} Configuration value
- */
 export const getUIConfig = (key) => {
   return CONFIG.UI[key];
 };
@@ -122,10 +87,6 @@ export const isDevelopment = () => {
   return CONFIG.ENVIRONMENT === "development";
 };
 
-/**
- * Check if running in production mode
- * @returns {boolean} True if in production mode
- */
 export const isProduction = () => {
   return CONFIG.ENVIRONMENT === "production";
 };

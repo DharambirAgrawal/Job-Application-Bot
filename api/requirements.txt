@@ -1,7 +1,7 @@
 # Web framework
 Flask==3.0.3
 flask-cors
-
+gunicorn
 # AWS SDK (used to connect to Supabase's S3-compatible storage)
 boto3==1.35.0
 botocore==1.35.0
@@ -18,4 +18,6 @@ PyPDF2
 
 # Google Generative AI SDK
 google-generativeai==0.7.2
+
+playwright
 
