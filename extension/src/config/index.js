@@ -1,6 +1,15 @@
 const CONFIG = {
   // Change this to switch environments
-  ENVIRONMENT: "development", // 'development' or 'production'
+  ENVIRONMENT: "production", // 'development' or 'production'
+
+  // API key (set VITE_JOB_ASSISTANT_API_KEY in your env)
+  API_KEY:
+    (typeof process !== "undefined" &&
+      process.env &&
+      process.env.VITE_JOB_ASSISTANT_API_KEY) ||
+    (typeof globalThis !== "undefined" &&
+      globalThis.VITE_JOB_ASSISTANT_API_KEY) ||
+    "example-api-key",
 
   // API endpoints for different environments
   API_ENDPOINTS: {
@@ -47,6 +56,8 @@ const CONFIG = {
 export const getApiBaseUrl = () => {
   return CONFIG.API_ENDPOINTS[CONFIG.ENVIRONMENT].baseUrl;
 };
+
+export const getApiKey = () => CONFIG.API_KEY;
 
 /**
  * Get the full API endpoint URL

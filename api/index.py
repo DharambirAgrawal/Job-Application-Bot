@@ -11,7 +11,12 @@ from utils.documentUtils import DocumentUtils
 from helper.helper import prepare_text_for_gemini, prepare_job_desc_text_gemini, parse_gemini_json
 
 app = Flask(__name__)
-CORS(app)
+CORS(
+    app,
+    resources={r"/api/*": {"origins": "*"}},
+    allow_headers=["Content-Type", "x-api-key"],
+    expose_headers=["Content-Type"],
+)
 load_dotenv()
 # Load Supabase credentials from environment
 SUPABASE_ENDPOINT = os.getenv("SUPABASE_ENDPOINT")
@@ -30,6 +35,26 @@ storage = SupabaseStorage(
 # Initialize gemini
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 gemini = GeminiTextGenerator(api_key=GEMINI_API_KEY)
+
+# Simple API key auth (set API_KEY env var in backend and frontend)
+API_KEY = os.getenv("API_KEY", "e")
+
+
+@app.before_request
+def require_api_key():
+    # Allow health/public endpoints without API key
+    if request.path in ["/api/hello", "/api/python"]:
+        return None
+
+    # Allow CORS preflight to proceed
+    if request.method == "OPTIONS":
+        return None
+
+    provided_key = request.headers.get("x-api-key")
+    if not provided_key or provided_key != API_KEY:
+        return jsonify({"error": "Unauthorized: missing or invalid API key"}), 401
+
+    return None
 
 @app.route("/api/upload", methods=["POST"])
 def upload_file():

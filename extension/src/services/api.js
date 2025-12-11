@@ -1,4 +1,4 @@
-import { getApiEndpoint } from "../config";
+import { getApiEndpoint, getApiKey } from "../config";
 class APIService {
   static async generateCoverLetter(jobDescription) {
     try {
@@ -8,6 +8,7 @@ class APIService {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-api-key": getApiKey(),
         },
         body: JSON.stringify({
           job_description: jobDescription,
@@ -61,6 +62,9 @@ class APIService {
         method: "POST",
         mode: "cors",
         cache: "no-cache",
+        headers: {
+          "x-api-key": getApiKey(),
+        },
         body: formData,
       });
 
@@ -90,6 +94,9 @@ class APIService {
 
       const response = await fetch(endpoint, {
         method: "POST",
+        headers: {
+          "x-api-key": getApiKey(),
+        },
         body: formData,
       });
 
@@ -129,6 +136,7 @@ class APIService {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-api-key": getApiKey(),
         },
         body: JSON.stringify({
           html: htmlContent,

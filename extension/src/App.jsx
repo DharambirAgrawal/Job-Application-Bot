@@ -1,20 +1,21 @@
-import { useState, useEffect, useCallback } from 'react';
-import FloatingButton from './components/FloatingButton';
-import ActionMenu from './components/ActionMenu';
-import AboutModal from './components/AboutModal';
-import PreviewModal from './components/PreviewModal';
-import Toast from './components/Toast';
-import useDraggable from './hooks/useDraggable';
-import useTextSelection from './hooks/useTextSelection';
-import useModal from './hooks/useModal';
-import useToast from './hooks/useToast';
-import APIService from './services/api';
-import { getEnvironment, getApiBaseUrl } from './config';
-import './index.css'
+import { useState, useEffect, useCallback } from "react";
+import FloatingButton from "./components/FloatingButton";
+import ActionMenu from "./components/ActionMenu";
+import AboutModal from "./components/AboutModal";
+import PreviewModal from "./components/PreviewModal";
+import JobDescriptionModal from "./components/JobDescriptionModal";
+import Toast from "./components/Toast";
+import useDraggable from "./hooks/useDraggable";
+import useTextSelection from "./hooks/useTextSelection";
+import useModal from "./hooks/useModal";
+import useToast from "./hooks/useToast";
+import APIService from "./services/api";
+import { getEnvironment, getApiBaseUrl } from "./config";
+import "./index.css";
 
 function App() {
   const [isActionsOpen, setIsActionsOpen] = useState(false);
-  const [selectedText, setSelectedText] = useState('');
+  const [selectedText, setSelectedText] = useState("");
   const [coverLetterStatus, setCoverLetterStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentDocxBlob, setCurrentDocxBlob] = useState(null);
@@ -25,7 +26,7 @@ function App() {
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
-    getPositionStyle
+    getPositionStyle,
   } = useDraggable({ x: null, y: null });
 
   const { toast, showToast } = useToast();
@@ -33,25 +34,31 @@ function App() {
   const {
     isOpen: isAboutOpen,
     openModal: openAbout,
-    closeModal: closeAbout
+    closeModal: closeAbout,
   } = useModal();
 
   const {
     isOpen: isPreviewOpen,
     openModal: openPreview,
-    closeModal: closePreview
+    closeModal: closePreview,
   } = useModal(() => {
     setCurrentDocxBlob(null);
   });
 
+  const {
+    isOpen: isManualInputOpen,
+    openModal: openManualInput,
+    closeModal: closeManualInput,
+  } = useModal();
+
   const { selectedText: autoSelectedText, clearSelection } = useTextSelection(
     (text) => {
       setSelectedText(text);
-      setCoverLetterStatus('ready');
+      setCoverLetterStatus("ready");
       setIsActionsOpen(true);
     },
     () => {
-      setSelectedText('');
+      setSelectedText("");
       setCoverLetterStatus(null);
       setIsActionsOpen(false);
     }
@@ -67,7 +74,7 @@ function App() {
     setIsActionsOpen(false);
     setTimeout(() => {
       if (!isActionsOpen) {
-        setSelectedText('');
+        setSelectedText("");
         clearSelection();
         setCoverLetterStatus(null);
       }
@@ -75,32 +82,42 @@ function App() {
   }, [isActionsOpen, clearSelection]);
 
   const handleGenerateCoverLetter = async () => {
-    try {
-      const textToUse = selectedText || autoSelectedText;
+    const textToUse = selectedText || autoSelectedText;
 
-      if (!textToUse) {
-        showToast('Please select the job description text first', 'error');
+    if (!textToUse) {
+      openManualInput();
+      return;
+    }
+
+    await startGeneration(textToUse);
+  };
+
+  const startGeneration = async (text) => {
+    try {
+      if (!text || text.trim().length === 0) {
+        showToast("Please provide a job description first", "error");
         return;
       }
 
       setIsLoading(true);
-      setCoverLetterStatus('loading');
-      showToast('Generating cover letter...', 'info');
+      setCoverLetterStatus("loading");
+      showToast("Generating cover letter...", "info");
 
-      const blob = await APIService.generateCoverLetter(textToUse);
+      const blob = await APIService.generateCoverLetter(text);
 
-      showToast('Cover letter generated successfully!', 'success');
+      showToast("Cover letter generated successfully!", "success");
       setCurrentDocxBlob(blob);
       openPreview();
 
-      setSelectedText('');
+      setSelectedText("");
       clearSelection();
       setCoverLetterStatus(null);
       closeActions();
+      closeManualInput();
     } catch (error) {
-      console.error('Error generating cover letter:', error);
-      showToast(error.message || 'Failed to generate cover letter', 'error');
-      setCoverLetterStatus('error');
+      console.error("Error generating cover letter:", error);
+      showToast(error.message || "Failed to generate cover letter", "error");
+      setCoverLetterStatus("error");
     } finally {
       setIsLoading(false);
     }
@@ -112,20 +129,22 @@ function App() {
   };
 
   const handleDownloadComplete = (format) => {
-    showToast(`${format.toUpperCase()} downloaded successfully!`, 'success');
+    showToast(`${format.toUpperCase()} downloaded successfully!`, "success");
   };
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       const target = e.target;
-      const isInsideUI = target.closest('[data-job-assistant]');
+      const isInsideUI = target.closest("[data-job-assistant]");
 
       if (isInsideUI || !isActionsOpen) {
         return;
       }
 
-      const selection = typeof window !== 'undefined' ? window.getSelection() : null;
-      const activeSelection = selection && selection.toString().trim().length > 0;
+      const selection =
+        typeof window !== "undefined" ? window.getSelection() : null;
+      const activeSelection =
+        selection && selection.toString().trim().length > 0;
       const storedSelection =
         (selectedText && selectedText.length > 0) ||
         (autoSelectedText && autoSelectedText.length > 0);
@@ -137,61 +156,69 @@ function App() {
       closeActions();
     };
 
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, [isActionsOpen, closeActions, selectedText, autoSelectedText]);
 
   useEffect(() => {
-    if (typeof document === 'undefined') {
+    if (typeof document === "undefined") {
       return () => {};
     }
 
     let cancelled = false;
 
     const logToTestPage = (message) => {
-      if (typeof window !== 'undefined' && typeof window.logTest === 'function') {
+      if (
+        typeof window !== "undefined" &&
+        typeof window.logTest === "function"
+      ) {
         window.logTest(message);
       }
     };
 
     const updateEnvironmentStatus = () => {
       const environment = getEnvironment();
-      const envLabel = environment.charAt(0).toUpperCase() + environment.slice(1);
-      const statusNode = document.getElementById('config-env-text');
+      const envLabel =
+        environment.charAt(0).toUpperCase() + environment.slice(1);
+      const statusNode = document.getElementById("config-env-text");
       if (statusNode) {
         statusNode.textContent = envLabel;
       }
 
-      const configNode = document.getElementById('config-env');
+      const configNode = document.getElementById("config-env");
       if (configNode) {
         configNode.textContent = environment;
       }
 
-      const envIndicator = document.getElementById('config-status');
+      const envIndicator = document.getElementById("config-status");
       if (envIndicator) {
-        envIndicator.classList.remove('loading', 'error');
+        envIndicator.classList.remove("loading", "error");
       }
 
-      const apiUrlNode = document.getElementById('config-api');
+      const apiUrlNode = document.getElementById("config-api");
       if (apiUrlNode) {
         apiUrlNode.textContent = getApiBaseUrl();
       }
 
-      const extensionStatusText = document.getElementById('extension-loaded-text');
+      const extensionStatusText = document.getElementById(
+        "extension-loaded-text"
+      );
       if (extensionStatusText) {
-        extensionStatusText.textContent = 'Loaded';
+        extensionStatusText.textContent = "Loaded";
       }
 
-      logToTestPage(`🌍 Environment detected: ${environment} (${getApiBaseUrl()})`);
+      logToTestPage(
+        `🌍 Environment detected: ${environment} (${getApiBaseUrl()})`
+      );
     };
 
     const updateApiStatus = async () => {
-      const indicator = document.getElementById('api-status');
-      const statusText = document.getElementById('api-status-text');
+      const indicator = document.getElementById("api-status");
+      const statusText = document.getElementById("api-status-text");
 
-      indicator?.classList.add('loading');
+      indicator?.classList.add("loading");
       if (statusText) {
-        statusText.textContent = 'Checking...';
+        statusText.textContent = "Checking...";
       }
 
       try {
@@ -201,27 +228,27 @@ function App() {
           return;
         }
 
-        indicator?.classList.remove('loading');
+        indicator?.classList.remove("loading");
 
         if (isOnline) {
-          indicator?.classList.remove('error');
+          indicator?.classList.remove("error");
           if (statusText) {
-            statusText.textContent = 'Online';
+            statusText.textContent = "Online";
           }
-          logToTestPage('✅ Backend API reachable');
+          logToTestPage("✅ Backend API reachable");
         } else {
-          indicator?.classList.add('error');
+          indicator?.classList.add("error");
           if (statusText) {
-            statusText.textContent = 'Offline';
+            statusText.textContent = "Offline";
           }
-          logToTestPage('❌ Backend API unreachable');
+          logToTestPage("❌ Backend API unreachable");
         }
       } catch (error) {
         if (!cancelled) {
-          indicator?.classList.add('error');
-          indicator?.classList.remove('loading');
+          indicator?.classList.add("error");
+          indicator?.classList.remove("loading");
           if (statusText) {
-            statusText.textContent = 'Error';
+            statusText.textContent = "Error";
           }
           logToTestPage(`⚠️ API status check failed: ${error.message}`);
         }
@@ -236,11 +263,14 @@ function App() {
     updateEnvironmentStatus();
     updateApiStatus();
 
-    document.addEventListener('job-assistant:refresh-status', refreshStatus);
+    document.addEventListener("job-assistant:refresh-status", refreshStatus);
 
     return () => {
       cancelled = true;
-      document.removeEventListener('job-assistant:refresh-status', refreshStatus);
+      document.removeEventListener(
+        "job-assistant:refresh-status",
+        refreshStatus
+      );
     };
   }, []);
 
@@ -249,7 +279,7 @@ function App() {
       <div
         data-job-assistant="fab-container"
         className="fixed bottom-6 right-6 z-999999 flex flex-col items-center gap-2 select-none"
-        style={getPositionStyle()}
+        style={{ ...getPositionStyle(), zIndex: 2147483647 }}
       >
         <ActionMenu
           isOpen={isActionsOpen}
@@ -276,6 +306,13 @@ function App() {
         onClose={closePreview}
         docxBlob={currentDocxBlob}
         onDownloadComplete={handleDownloadComplete}
+      />
+
+      <JobDescriptionModal
+        isOpen={isManualInputOpen}
+        onClose={closeManualInput}
+        onSubmit={startGeneration}
+        isSubmitting={isLoading}
       />
 
       <Toast toast={toast} />
