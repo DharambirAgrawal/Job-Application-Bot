@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import FloatingButton from "./components/FloatingButton";
 import ActionMenu from "./components/ActionMenu";
-import AboutModal from "./components/AboutModal";
 import PreviewModal from "./components/PreviewModal";
 import JobDescriptionModal from "./components/JobDescriptionModal";
+import { PROFILE_UPLOADS_STORAGE_KEY } from "./components/profileStorage";
 import Toast from "./components/Toast";
 import useDraggable from "./hooks/useDraggable";
 import useTextSelection from "./hooks/useTextSelection";
@@ -13,12 +13,16 @@ import APIService from "./services/api";
 import { getEnvironment, getApiBaseUrl } from "./config";
 import "./index.css";
 
+const LazyAboutModal = lazy(() => import("./components/AboutModal"));
+const LazyProfileModal = lazy(() => import("./components/ProfileModal"));
+
 function App() {
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [selectedText, setSelectedText] = useState("");
   const [coverLetterStatus, setCoverLetterStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentDocxBlob, setCurrentDocxBlob] = useState(null);
+  const [profileUploads, setProfileUploads] = useState({});
 
   const {
     isDragging,
@@ -49,6 +53,12 @@ function App() {
     isOpen: isManualInputOpen,
     openModal: openManualInput,
     closeModal: closeManualInput,
+  } = useModal();
+
+  const {
+    isOpen: isProfileOpen,
+    openModal: openProfile,
+    closeModal: closeProfile,
   } = useModal();
 
   const { selectedText: autoSelectedText, clearSelection } = useTextSelection(
@@ -125,6 +135,11 @@ function App() {
 
   const handleAbout = () => {
     openAbout();
+    closeActions();
+  };
+
+  const handleProfile = () => {
+    openProfile();
     closeActions();
   };
 
@@ -274,6 +289,29 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      const stored = window.localStorage.getItem(PROFILE_UPLOADS_STORAGE_KEY);
+      if (stored) {
+        setProfileUploads(JSON.parse(stored));
+      }
+    } catch (error) {
+      console.warn("Could not read profile uploads from storage", error);
+    }
+  }, []);
+
+  const profileStatus =
+    profileUploads &&
+    (profileUploads.coverletter ||
+      profileUploads.resume ||
+      profileUploads.summary)
+      ? "ready"
+      : null;
+
   return (
     <>
       <div
@@ -285,8 +323,10 @@ function App() {
           isOpen={isActionsOpen}
           onGenerateCoverLetter={handleGenerateCoverLetter}
           onAbout={handleAbout}
+          onProfile={handleProfile}
           coverLetterStatus={coverLetterStatus}
           isLoading={isLoading}
+          profileStatus={profileStatus}
         />
 
         <FloatingButton
@@ -299,7 +339,9 @@ function App() {
         />
       </div>
 
-      <AboutModal isOpen={isAboutOpen} onClose={closeAbout} />
+      <Suspense fallback={null}>
+        <LazyAboutModal isOpen={isAboutOpen} onClose={closeAbout} />
+      </Suspense>
 
       <PreviewModal
         isOpen={isPreviewOpen}
@@ -314,6 +356,16 @@ function App() {
         onSubmit={startGeneration}
         isSubmitting={isLoading}
       />
+
+      <Suspense fallback={null}>
+        <LazyProfileModal
+          isOpen={isProfileOpen}
+          onClose={closeProfile}
+          uploads={profileUploads}
+          onUploadsChange={setProfileUploads}
+          showToast={showToast}
+        />
+      </Suspense>
 
       <Toast toast={toast} />
     </>

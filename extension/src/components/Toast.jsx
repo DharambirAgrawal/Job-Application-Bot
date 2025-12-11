@@ -83,7 +83,7 @@ const Toast = ({ toast, onDismiss }) => {
   return (
     <div 
       className={`
-        fixed top-5 right-5 z-1000000
+        fixed top-5 right-5 z-1000002
         bg-white rounded-xl shadow-2xl
         flex items-center gap-3
         px-5 py-4 max-w-md

@@ -1,4 +1,13 @@
-import { getApiEndpoint, getApiKey } from "../config";
+import { getApiEndpoint } from "../config";
+import { VITE_JOB_ASSISTANT_API_KEY } from "../../environment";
+
+const isNetworkFailure = (error) => {
+  // Browser network failures surface as TypeError with message 'Failed to fetch'
+  return (
+    (error?.name === "TypeError" && error?.message === "Failed to fetch") ||
+    error?.message === "Failed to fetch"
+  );
+};
 class APIService {
   static async generateCoverLetter(jobDescription) {
     try {
@@ -8,7 +17,7 @@ class APIService {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": getApiKey(),
+          "x-api-key": VITE_JOB_ASSISTANT_API_KEY,
         },
         body: JSON.stringify({
           job_description: jobDescription,
@@ -30,10 +39,7 @@ class APIService {
     } catch (error) {
       console.error("API error while generating cover letter", error);
 
-      if (
-        error.message.includes("Failed to fetch") ||
-        error.message.includes("NetworkError")
-      ) {
+      if (isNetworkFailure(error)) {
         throw new Error(
           "🌐 Network error: Cannot reach the API. Check if the backend is running."
         );
@@ -63,7 +69,7 @@ class APIService {
         mode: "cors",
         cache: "no-cache",
         headers: {
-          "x-api-key": getApiKey(),
+          "x-api-key": VITE_JOB_ASSISTANT_API_KEY,
         },
         body: formData,
       });
@@ -85,6 +91,70 @@ class APIService {
     }
   }
 
+  static async uploadTemplate(file, enforcedName) {
+    try {
+      const endpoint = getApiEndpoint("uploadTemplate");
+
+      const formData = new FormData();
+      formData.append("file", file, enforcedName || file.name);
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "x-api-key": VITE_JOB_ASSISTANT_API_KEY,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        let errorMessage = "Failed to upload template";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error("Template upload error", error);
+      throw error;
+    }
+  }
+
+  static async uploadSummary(text) {
+    try {
+      const endpoint = getApiEndpoint("uploadSummary");
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": VITE_JOB_ASSISTANT_API_KEY,
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        let errorMessage = "Failed to save summary";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      return response.json();
+    } catch (error) {
+      console.error("Summary upload error", error);
+      throw error;
+    }
+  }
+
   static async convertToPdf(docxBlob) {
     try {
       const endpoint = getApiEndpoint("convertToPdf");
@@ -95,7 +165,7 @@ class APIService {
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
-          "x-api-key": getApiKey(),
+          "x-api-key": VITE_JOB_ASSISTANT_API_KEY,
         },
         body: formData,
       });
@@ -115,10 +185,7 @@ class APIService {
     } catch (error) {
       console.error("API error while converting to PDF", error);
 
-      if (
-        error.message.includes("Failed to fetch") ||
-        error.message.includes("NetworkError")
-      ) {
+      if (isNetworkFailure(error)) {
         throw new Error(
           "🌐 Network error: Cannot reach the API. Check if the backend is running."
         );
@@ -136,7 +203,7 @@ class APIService {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": getApiKey(),
+          "x-api-key": VITE_JOB_ASSISTANT_API_KEY,
         },
         body: JSON.stringify({
           html: htmlContent,

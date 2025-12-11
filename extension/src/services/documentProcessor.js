@@ -1,25 +1,35 @@
-import { renderAsync as renderDocx } from "docx-preview";
-import docxPreviewInlineStyles from "../styles/docxPreview.css?inline";
-import "../styles/docxPreview.css";
-import * as mammoth from "mammoth/mammoth.browser";
-
 class DocumentProcessor {
+  static previewStylesPromise = null;
+
   static assertBrowser() {
     if (typeof window === "undefined" || typeof document === "undefined") {
       throw new Error("Document processing requires a browser environment.");
     }
   }
 
+  static async loadPreviewStyles() {
+    if (!this.previewStylesPromise) {
+      this.previewStylesPromise = import(
+        "../styles/docxPreview.css?inline"
+      ).then((mod) => mod.default || "");
+    }
+
+    return this.previewStylesPromise;
+  }
+
   static async docxToHtml(docxBlob) {
     this.assertBrowser();
-    const arrayBuffer = await docxBlob.arrayBuffer();
+    const [arrayBuffer, previewStyles] = await Promise.all([
+      docxBlob.arrayBuffer(),
+      this.loadPreviewStyles(),
+    ]);
 
-    const previewHtml = await this.tryDocxPreview(arrayBuffer);
+    const previewHtml = await this.tryDocxPreview(arrayBuffer, previewStyles);
     if (previewHtml) {
       return previewHtml;
     }
 
-    const fallbackHtml = await this.tryMammoth(arrayBuffer);
+    const fallbackHtml = await this.tryMammoth(arrayBuffer, previewStyles);
     if (fallbackHtml) {
       return fallbackHtml;
     }
@@ -27,8 +37,9 @@ class DocumentProcessor {
     throw new Error("Failed to preview document");
   }
 
-  static async tryDocxPreview(arrayBuffer) {
+  static async tryDocxPreview(arrayBuffer, previewStyles) {
     try {
+      const { renderAsync: renderDocx } = await import("docx-preview");
       const container = document.createElement("div");
       container.className = "job-assistant-docx-preview";
 
@@ -45,7 +56,7 @@ class DocumentProcessor {
 
       return `
         <style data-docx-preview>
-          ${docxPreviewInlineStyles}
+          ${previewStyles}
         </style>
         ${container.innerHTML}
       `;
@@ -55,7 +66,16 @@ class DocumentProcessor {
     }
   }
 
-  static async tryMammoth(arrayBuffer) {
+  static async tryMammoth(arrayBuffer, previewStyles) {
+    let mammoth;
+
+    try {
+      mammoth = await import("mammoth/mammoth.browser");
+    } catch (error) {
+      console.warn("mammoth import failed:", error);
+      return null;
+    }
+
     if (!mammoth || typeof mammoth.convertToHtml !== "function") {
       return null;
     }
@@ -76,7 +96,7 @@ class DocumentProcessor {
 
       return `
         <style data-docx-preview>
-          ${docxPreviewInlineStyles}
+          ${previewStyles}
         </style>
         <div class="docx-preview-content">${result.value}</div>
       `;

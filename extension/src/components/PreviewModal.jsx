@@ -151,16 +151,33 @@ const PreviewModal = ({ isOpen, onClose, docxBlob, onDownloadComplete }) => {
         {/* Body */}
         <div className="flex-1 overflow-y-auto bg-gray-50 p-6">
           {isLoading ? (
-            <div className="flex items-center justify-center py-16 text-gray-600">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="w-6 h-6 mr-3 animate-spin"
+            <div className="space-y-6">
+              <div className="flex items-center justify-center text-gray-600">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  className="w-6 h-6 mr-3 animate-spin"
+                >
+                  <path d="M4.5 12a1.5 1.5 0 003 0 1.5 1.5 0 00-3 0zM10.5 12a1.5 1.5 0 003 0 1.5 1.5 0 00-3 0zM16.5 12a1.5 1.5 0 003 0 1.5 1.5 0 00-3 0z" />
+                </svg>
+                Preparing preview...
+              </div>
+              <div
+                className="bg-white rounded-lg shadow-sm p-8 min-h-[520px] animate-pulse"
+                aria-hidden="true"
               >
-                <path d="M4.5 12a1.5 1.5 0 003 0 1.5 1.5 0 00-3 0zM10.5 12a1.5 1.5 0 003 0 1.5 1.5 0 00-3 0zM16.5 12a1.5 1.5 0 003 0 1.5 1.5 0 00-3 0z" />
-              </svg>
-              Loading preview...
+                <div className="space-y-4">
+                  <div className="h-5 bg-gray-200 rounded w-2/3" />
+                  <div className="h-4 bg-gray-200 rounded" />
+                  <div className="h-4 bg-gray-200 rounded w-5/6" />
+                  <div className="h-4 bg-gray-200 rounded w-3/4" />
+                  <div className="h-4 bg-gray-200 rounded w-2/3" />
+                  <div className="h-4 bg-gray-200 rounded w-4/5" />
+                  <div className="h-4 bg-gray-200 rounded w-1/2" />
+                  <div className="h-4 bg-gray-200 rounded w-5/6" />
+                </div>
+              </div>
             </div>
           ) : error ? (
             <div className="text-center py-16">

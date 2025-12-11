@@ -1,6 +1,6 @@
 import re
 import json
-MAX_CHARS = 15000  # adjust for Gemini context
+MAX_CHARS = 20000  # adjust for Gemini context
 
 def prepare_text_for_gemini(text, max_chars=MAX_CHARS):
     

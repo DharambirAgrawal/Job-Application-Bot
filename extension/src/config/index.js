@@ -3,13 +3,6 @@ const CONFIG = {
   ENVIRONMENT: "production", // 'development' or 'production'
 
   // API key (set VITE_JOB_ASSISTANT_API_KEY in your env)
-  API_KEY:
-    (typeof process !== "undefined" &&
-      process.env &&
-      process.env.VITE_JOB_ASSISTANT_API_KEY) ||
-    (typeof globalThis !== "undefined" &&
-      globalThis.VITE_JOB_ASSISTANT_API_KEY) ||
-    "example-api-key",
 
   // API endpoints for different environments
   API_ENDPOINTS: {
@@ -17,6 +10,8 @@ const CONFIG = {
       baseUrl: "http://127.0.0.1:5000",
       generateCoverLetter: "/api/generate_coverletter",
       upload: "/api/upload",
+      uploadTemplate: "/api/upload-template",
+      uploadSummary: "/api/upload-summary",
       hello: "/api/hello",
       convertToPdf: "/api/convert_to_pdf",
       convertHtmlToPdf: "/api/html_to_pdf",
@@ -25,6 +20,8 @@ const CONFIG = {
       baseUrl: "https://job-application-bot-mw1m.onrender.com",
       generateCoverLetter: "/api/generate_coverletter",
       upload: "/api/upload",
+      uploadTemplate: "/api/upload-template",
+      uploadSummary: "/api/upload-summary",
       hello: "/api/hello",
       convertToPdf: "/api/convert_to_pdf",
       convertHtmlToPdf: "/api/html_to_pdf",
@@ -46,6 +43,7 @@ const CONFIG = {
     coverLetterGeneration: true,
     resumeAnalysis: false,
     jobMatching: false,
+    profileUploads: true,
   },
 };
 
@@ -56,8 +54,6 @@ const CONFIG = {
 export const getApiBaseUrl = () => {
   return CONFIG.API_ENDPOINTS[CONFIG.ENVIRONMENT].baseUrl;
 };
-
-export const getApiKey = () => CONFIG.API_KEY;
 
 /**
  * Get the full API endpoint URL

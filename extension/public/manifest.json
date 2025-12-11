@@ -7,10 +7,9 @@
   "host_permissions": [
     "https://project981.pythonanywhere.com/*",
     "https://ubiquitous-fishstick-p59p7wgq9w4c69pj-5328.app.github.dev/*",
-    "https://*.app.github.dev/*",
-    "http://localhost:*/*",
-    "http://127.0.0.1:*/*"
+    "https://*.app.github.dev/*"
   ],
+  "optional_host_permissions": ["http://localhost:*/*", "http://127.0.0.1:*/*"],
   "action": {
     "default_title": "Job Application Assistant"
   },

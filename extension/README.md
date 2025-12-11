@@ -12,6 +12,7 @@ AI-powered Chrome extension for job application automation, featuring cover lett
 - 🌐 **Environment Switching**: Easy configuration for dev/production environments
 - 📦 **Modular Architecture**: Clean, well-commented, and maintainable codebase
 - 🎭 **Beautiful Animations**: Smooth transitions and modern design with Tailwind
+- 🧩 **Lazy-Loaded Portals**: About and Profile modals load on demand to keep the content script light
 
 ## 📁 Project Structure
 
@@ -398,6 +399,20 @@ Access-Control-Allow-Headers: Content-Type
 
 - Extension only activates when user selects text
 - No data is stored locally or sent without user action
+
+## 📚 Documentation Map (single source)
+
+- Quick start, build, and troubleshooting live in this README (see Getting Started and Troubleshooting).
+- Development workflow and scripts are in this README (see Development and Available Scripts).
+- The original conversion notes are summarized below.
+
+## 🧭 Conversion Summary (vanilla → React)
+
+- Rebuilt the extension into modular React components (FloatingButton, ActionMenu, About/Preview/Toast) with reusable hooks (dragging, selection, modals, toasts).
+- Centralized configuration and feature flags in [src/config/index.js](src/config/index.js).
+- Added service layer for API and document handling, Tailwind v4 styling, and Vite for fast builds.
+- Preserved feature parity (floating UI, selection-driven actions, cover-letter generation, downloads) while improving animations, accessibility, and error handling.
+- Added lazy loading for heavier portals (About, Profile) to minimize impact on page performance.
 - All API calls are logged to console for transparency
 - Host permissions are minimal and scoped
 - No tracking or analytics
