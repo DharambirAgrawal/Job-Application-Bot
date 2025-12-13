@@ -1,6 +1,6 @@
 const CONFIG = {
   // Change this to switch environments
-  ENVIRONMENT: "development", // 'development' or 'production'
+  ENVIRONMENT: "production", // 'development' or 'production'
 
   // API key (set VITE_JOB_ASSISTANT_API_KEY in your env)
 

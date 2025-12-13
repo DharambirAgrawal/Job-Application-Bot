@@ -73,7 +73,7 @@ PROMPTS= {
                 "}}\n\n"
                 "Rules:\n"
                 "- Fill EVERY placeholder you see; avoid empty strings unless absolutely no relevant info exists.\n"
-                "- ALWAYS include the company placeholder (e.g., <%COMPANYNAME%>) using the job description name if present.\n"
+                "- ALWAYS include the company name (e.g., <%COMPANYNAME%> : Company name) the name of the company from job description\n"
                 "- Use factual info from RESUME SOURCE; do not invent past employers, dates, titles, or numbers.\n"
                 "- If a bullet is empty in source, craft a truthful, skills-focused bullet aligned to the JOB DESCRIPTION (no fake metrics; emphasize duties/skills/impact with ATS keywords).\n"
                 "- Obey CH/LN limits: stay within character caps and line caps; trim gracefully while keeping meaning.\n"

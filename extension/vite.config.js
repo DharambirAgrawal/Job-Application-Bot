@@ -19,6 +19,13 @@ export default defineConfig({
         main: resolve(__dirname, "src/main.jsx"),
       },
       output: {
+        // Content scripts must be classic scripts (not ES modules).
+        // Emit a single IIFE bundle with inlined dynamic imports so Chrome
+        // won't see `export` statements in the injected file.
+        format: "iife",
+        inlineDynamicImports: true,
+        exports: "none",
+        name: "JobAssistantContentScript",
         entryFileNames: "assets/[name].js",
         chunkFileNames: "assets/[name].js",
         assetFileNames: "assets/[name].[ext]",
