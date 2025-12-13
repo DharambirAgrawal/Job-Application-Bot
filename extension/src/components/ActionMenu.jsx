@@ -85,22 +85,27 @@ const ActionButton = ({
  * @param {Object} props - Component props
  * @param {boolean} props.isOpen - Whether the menu is open
  * @param {Function} props.onGenerateCoverLetter - Cover letter generation handler
+ * @param {Function} props.onGenerateResume - Resume generation handler
  * @param {Function} props.onAbout - About modal handler
  * @param {string} props.coverLetterStatus - Status of cover letter generation
+ * @param {string} props.resumeStatus - Status of resume generation
  * @param {boolean} props.isLoading - Whether an action is in progress
  * @returns {JSX.Element} Action menu element
  */
 const ActionMenu = ({
   isOpen,
   onGenerateCoverLetter,
+  onGenerateResume,
   onAbout,
   onProfile,
   coverLetterStatus = null,
+  resumeStatus = null,
   profileStatus = null,
   isLoading = false,
 }) => {
   const features = {
     coverLetter: isFeatureEnabled("coverLetterGeneration"),
+    resume: isFeatureEnabled("resumeGeneration"),
     resumeAnalysis: isFeatureEnabled("resumeAnalysis"),
     profileUploads: isFeatureEnabled("profileUploads"),
   };
@@ -135,6 +140,27 @@ const ActionMenu = ({
           isPrimary={true}
           disabled={isLoading}
           status={coverLetterStatus}
+        />
+      )}
+
+      {/* Resume Generation Button */}
+      {features.resume && (
+        <ActionButton
+          icon={
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M4.5 4.125C4.5 3.504 5.004 3 5.625 3h7.5c.621 0 1.125.504 1.125 1.125V9.75H9.75a2.25 2.25 0 00-2.25 2.25v6.75H5.625A1.125 1.125 0 014.5 17.625v-13.5z" />
+              <path d="M9.75 10.875c0-.621.504-1.125 1.125-1.125h6.75c.621 0 1.125.504 1.125 1.125v9c0 .621-.504 1.125-1.125 1.125h-6.75A1.125 1.125 0 019.75 19.875v-9z" />
+            </svg>
+          }
+          label="Generate Resume"
+          onClick={onGenerateResume}
+          isPrimary={false}
+          disabled={isLoading}
+          status={resumeStatus}
         />
       )}
 

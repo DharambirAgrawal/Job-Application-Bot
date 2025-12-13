@@ -1,6 +1,6 @@
 const CONFIG = {
   // Change this to switch environments
-  ENVIRONMENT: "production", // 'development' or 'production'
+  ENVIRONMENT: "development", // 'development' or 'production'
 
   // API key (set VITE_JOB_ASSISTANT_API_KEY in your env)
 
@@ -9,6 +9,7 @@ const CONFIG = {
     development: {
       baseUrl: "http://127.0.0.1:5000",
       generateCoverLetter: "/api/generate_coverletter",
+      generateResume: "/api/generate_resume",
       upload: "/api/upload",
       uploadTemplate: "/api/upload-template",
       uploadSummary: "/api/upload-summary",
@@ -19,6 +20,7 @@ const CONFIG = {
     production: {
       baseUrl: "https://job-application-bot-mw1m.onrender.com",
       generateCoverLetter: "/api/generate_coverletter",
+      generateResume: "/api/generate_resume",
       upload: "/api/upload",
       uploadTemplate: "/api/upload-template",
       uploadSummary: "/api/upload-summary",
@@ -41,6 +43,7 @@ const CONFIG = {
   // Feature flags - enable/disable features
   FEATURES: {
     coverLetterGeneration: true,
+    resumeGeneration: true,
     resumeAnalysis: false,
     jobMatching: false,
     profileUploads: true,

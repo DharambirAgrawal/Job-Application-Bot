@@ -35,9 +35,99 @@ class APIService {
         throw new Error(errorMessage);
       }
 
-      return response.blob();
+      const blob = await response.blob();
+      const contentDisposition =
+        response.headers.get("Content-Disposition") ||
+        response.headers.get("content-disposition");
+
+      let filename = "cover_letter.docx";
+      if (contentDisposition) {
+        const match = contentDisposition.match(
+          /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i
+        );
+        const encoded = match?.[1];
+        const plain = match?.[2];
+        if (encoded) {
+          try {
+            filename = decodeURIComponent(encoded);
+          } catch (e) {
+            filename = encoded;
+          }
+        } else if (plain) {
+          filename = plain;
+        }
+      }
+
+      return { blob, filename };
     } catch (error) {
       console.error("API error while generating cover letter", error);
+
+      if (isNetworkFailure(error)) {
+        throw new Error(
+          "🌐 Network error: Cannot reach the API. Check if the backend is running."
+        );
+      } else if (error.message.includes("CORS")) {
+        throw new Error(
+          "🔒 CORS error: API not configured for cross-origin requests."
+        );
+      }
+
+      throw error;
+    }
+  }
+
+  static async generateResume(jobDescription) {
+    try {
+      const endpoint = getApiEndpoint("generateResume");
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": VITE_JOB_ASSISTANT_API_KEY,
+        },
+        body: JSON.stringify({
+          job_description: jobDescription,
+        }),
+      });
+
+      if (!response.ok) {
+        let errorMessage = "Failed to generate resume";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const blob = await response.blob();
+      const contentDisposition =
+        response.headers.get("Content-Disposition") ||
+        response.headers.get("content-disposition");
+
+      let filename = "resume.docx";
+      if (contentDisposition) {
+        const match = contentDisposition.match(
+          /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i
+        );
+        const encoded = match?.[1];
+        const plain = match?.[2];
+        if (encoded) {
+          try {
+            filename = decodeURIComponent(encoded);
+          } catch (e) {
+            filename = encoded;
+          }
+        } else if (plain) {
+          filename = plain;
+        }
+      }
+
+      return { blob, filename };
+    } catch (error) {
+      console.error("API error while generating resume", error);
 
       if (isNetworkFailure(error)) {
         throw new Error(

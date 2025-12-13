@@ -20,8 +20,10 @@ function App() {
   const [isActionsOpen, setIsActionsOpen] = useState(false);
   const [selectedText, setSelectedText] = useState("");
   const [coverLetterStatus, setCoverLetterStatus] = useState(null);
+  const [resumeStatus, setResumeStatus] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentDocxBlob, setCurrentDocxBlob] = useState(null);
+  const [currentDocxFile, setCurrentDocxFile] = useState(null);
+  const [pendingMode, setPendingMode] = useState(null); // 'cover' | 'resume'
   const [profileUploads, setProfileUploads] = useState({});
 
   const {
@@ -46,7 +48,7 @@ function App() {
     openModal: openPreview,
     closeModal: closePreview,
   } = useModal(() => {
-    setCurrentDocxBlob(null);
+    setCurrentDocxFile(null);
   });
 
   const {
@@ -65,11 +67,13 @@ function App() {
     (text) => {
       setSelectedText(text);
       setCoverLetterStatus("ready");
+      setResumeStatus("ready");
       setIsActionsOpen(true);
     },
     () => {
       setSelectedText("");
       setCoverLetterStatus(null);
+      setResumeStatus(null);
       setIsActionsOpen(false);
     }
   );
@@ -87,22 +91,36 @@ function App() {
         setSelectedText("");
         clearSelection();
         setCoverLetterStatus(null);
+        setResumeStatus(null);
       }
     }, 300);
   }, [isActionsOpen, clearSelection]);
 
   const handleGenerateCoverLetter = async () => {
+    triggerGeneration("cover");
+  };
+
+  const handleGenerateResume = async () => {
+    triggerGeneration("resume");
+  };
+
+  const triggerGeneration = (mode) => {
     const textToUse = selectedText || autoSelectedText;
 
     if (!textToUse) {
+      setPendingMode(mode);
       openManualInput();
       return;
     }
 
-    await startGeneration(textToUse);
+    startGeneration(mode, textToUse);
   };
 
-  const startGeneration = async (text) => {
+  const startGeneration = async (mode, text) => {
+    const isResume = mode === "resume";
+    const setStatus = isResume ? setResumeStatus : setCoverLetterStatus;
+    const workingLabel = isResume ? "resume" : "cover letter";
+
     try {
       if (!text || text.trim().length === 0) {
         showToast("Please provide a job description first", "error");
@@ -110,26 +128,32 @@ function App() {
       }
 
       setIsLoading(true);
-      setCoverLetterStatus("loading");
-      showToast("Generating cover letter...", "info");
+      setStatus("loading");
+      showToast(`Generating ${workingLabel}...`, "info");
 
-      const blob = await APIService.generateCoverLetter(text);
+      const { blob, filename } = isResume
+        ? await APIService.generateResume(text)
+        : await APIService.generateCoverLetter(text);
 
-      showToast("Cover letter generated successfully!", "success");
-      setCurrentDocxBlob(blob);
+      showToast(
+        `${isResume ? "Resume" : "Cover letter"} generated successfully!`,
+        "success"
+      );
+      setCurrentDocxFile({ blob, filename });
       openPreview();
 
       setSelectedText("");
       clearSelection();
-      setCoverLetterStatus(null);
+      setStatus(null);
       closeActions();
       closeManualInput();
     } catch (error) {
-      console.error("Error generating cover letter:", error);
-      showToast(error.message || "Failed to generate cover letter", "error");
-      setCoverLetterStatus("error");
+      console.error("Error generating document:", error);
+      showToast(error.message || `Failed to generate ${workingLabel}`, "error");
+      setStatus("error");
     } finally {
       setIsLoading(false);
+      setPendingMode(null);
     }
   };
 
@@ -322,9 +346,11 @@ function App() {
         <ActionMenu
           isOpen={isActionsOpen}
           onGenerateCoverLetter={handleGenerateCoverLetter}
+          onGenerateResume={handleGenerateResume}
           onAbout={handleAbout}
           onProfile={handleProfile}
           coverLetterStatus={coverLetterStatus}
+          resumeStatus={resumeStatus}
           isLoading={isLoading}
           profileStatus={profileStatus}
         />
@@ -346,15 +372,31 @@ function App() {
       <PreviewModal
         isOpen={isPreviewOpen}
         onClose={closePreview}
-        docxBlob={currentDocxBlob}
+        docxFile={currentDocxFile}
         onDownloadComplete={handleDownloadComplete}
       />
 
       <JobDescriptionModal
         isOpen={isManualInputOpen}
         onClose={closeManualInput}
-        onSubmit={startGeneration}
+        onSubmit={(text) => startGeneration(pendingMode || "cover", text)}
         isSubmitting={isLoading}
+        title={
+          pendingMode === "resume"
+            ? "Paste the job description for your resume"
+            : "Paste the job description"
+        }
+        subtitle={
+          pendingMode === "resume"
+            ? "We will tailor your resume with ATS-friendly language for this role."
+            : "We will generate a tailored cover letter from this text."
+        }
+        badge={
+          pendingMode === "resume"
+            ? "Resume generation"
+            : "No selection detected"
+        }
+        ctaLabel={pendingMode === "resume" ? "Generate Resume" : "Generate"}
       />
 
       <Suspense fallback={null}>

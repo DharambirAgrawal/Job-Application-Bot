@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import DocumentProcessor from "../services/documentProcessor";
 import APIService from "../services/api";
-const PreviewModal = ({ isOpen, onClose, docxBlob, onDownloadComplete }) => {
+const PreviewModal = ({ isOpen, onClose, docxFile, onDownloadComplete }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [htmlContent, setHtmlContent] = useState("");
   const [error, setError] = useState(null);
@@ -11,17 +11,17 @@ const PreviewModal = ({ isOpen, onClose, docxBlob, onDownloadComplete }) => {
   });
 
   useEffect(() => {
-    if (isOpen && docxBlob) {
+    if (isOpen && docxFile?.blob) {
       loadPreview();
     }
-  }, [isOpen, docxBlob]);
+  }, [isOpen, docxFile]);
 
   const loadPreview = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const html = await DocumentProcessor.docxToHtml(docxBlob);
+      const html = await DocumentProcessor.docxToHtml(docxFile.blob);
       setHtmlContent(html);
     } catch (err) {
       console.error("Error loading preview:", err);
@@ -35,8 +35,10 @@ const PreviewModal = ({ isOpen, onClose, docxBlob, onDownloadComplete }) => {
     try {
       setIsDownloading((prev) => ({ ...prev, [format]: true }));
 
+      const docxFilename = docxFile?.filename || "cover_letter.docx";
+
       if (format === "docx") {
-        downloadFile(docxBlob, "cover-letter.docx");
+        downloadFile(docxFile.blob, docxFilename);
       } else if (format === "pdf") {
         if (!htmlContent) {
           throw new Error("Preview content not available for PDF generation");
@@ -65,7 +67,8 @@ const PreviewModal = ({ isOpen, onClose, docxBlob, onDownloadComplete }) => {
         if (!pdfBlob || pdfBlob.size === 0) {
           throw new Error("Generated PDF is empty");
         }
-        downloadFile(pdfBlob, "cover-letter.pdf");
+        const pdfName = docxFilename.replace(/\.docx$/i, "") || "cover_letter";
+        downloadFile(pdfBlob, `${pdfName}.pdf`);
       }
 
       if (onDownloadComplete) {

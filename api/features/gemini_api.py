@@ -40,15 +40,22 @@ class GeminiTextGenerator:
             raise ValueError("Input text cannot be empty.")
         if task not in self.prompts:
             raise ValueError(f"No prompt found for task '{task}'.")
+        print("Generating Gemini prompt...")
         
-        if second_text:
-            prompt = self.prompts[task].format(
-                resume_summary=text.strip(),
-                job_description=second_text.strip(),
-                DATE=get_today_date()
+        payload = {
+            "input_text": text.strip(),
+            "resume_summary": text.strip(),
+            "job_description": second_text.strip() if second_text else "",
+            "DATE": get_today_date(),
+        }
+
+        try:
+            prompt = self.prompts[task].format(**payload)
+        except KeyError as e:
+            print(f"Prompt formatting failed: missing placeholder {e} for task '{task}'")
+            raise GeminiTextGenerationError(
+                f"Prompt formatting failed: missing placeholder {e} for task '{task}'"
             )
-        else:
-            prompt = self.prompts[task].format(input_text=text.strip())
 
         # prompt = self.prompts[task].format(input_text=text.strip())
         logger.debug(f"Generated prompt for '{task}': {prompt[:150]}...")

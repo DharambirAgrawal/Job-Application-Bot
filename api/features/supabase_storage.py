@@ -48,9 +48,7 @@ class SupabaseStorage:
             dict: Upload info with bucket and key
         """
         key = f"{folder.strip('/')}/{file_name}" if folder else file_name
-        print(key)
-        print(file_name)
-        print(folder)
+
 
         if isinstance(data, bytes):
             payload = io.BytesIO(data)

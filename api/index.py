@@ -9,13 +9,14 @@ from features.gemini_api import GeminiTextGenerator
 from utils.documentUtils import DocumentUtils
 
 from helper.helper import prepare_text_for_gemini, prepare_job_desc_text_gemini, parse_gemini_json
+import re
 
 app = Flask(__name__)
 CORS(
     app,
     resources={r"/api/*": {"origins": "*"}},
     allow_headers=["Content-Type", "x-api-key"],
-    expose_headers=["Content-Type"],
+    expose_headers=["Content-Type", "Content-Disposition"],
 )
 load_dotenv()
 # Load Supabase credentials from environment
@@ -56,6 +57,8 @@ def require_api_key():
 
     return None
 
+
+# Will  not require as I made the template and the summary upload endpoints
 @app.route("/api/upload", methods=["POST"])
 def upload_file():
     """
@@ -137,93 +140,172 @@ def upload_file():
 
 @app.route("/api/generate_coverletter", methods=["POST"])
 def generate_coverletter():
-    """
-    Generate a cover letter using the uploaded resume and job description.
-    """
-    data = request.json
+    """Generate a cover letter using saved summary and template assets."""
+    data = request.json or {}
     job_description = data.get("job_description", "").strip()
 
     if not job_description:
         return jsonify({"error": "job_description is required."}), 400
 
-    # 1️⃣ Prepare resume text for Gemini
     prepared_text = prepare_job_desc_text_gemini(job_description)
 
-    # 2️⃣ Fetch summary safely
     try:
-        file_stream = storage.fetch_file("resume_summary.txt", folder="summary")
-        if not file_stream:
-            return jsonify({"error": "Resume summary not found. Please upload your resume first."}), 404
-        summary = file_stream.read().decode("utf-8")
-        if not summary.strip():
-            return jsonify({"error": "Resume summary is empty. Please regenerate your resume summary."}), 400
-    except Exception as e:
-        return jsonify({"error": f"Could not fetch resume summary"}), 500
+        summary_stream = storage.fetch_file("summary.txt", folder="user")
+    except Exception:
+        return jsonify({"error": "Failed to fetch summary from storage."}), 500
 
-    # 3️⃣ Generate cover letter using Gemini
+    if not summary_stream:
+        return jsonify({"error": "Summary not found. Please upload your summary first."}), 404
+
+    summary = summary_stream.read().decode("utf-8")
+    if not summary.strip():
+        return jsonify({"error": "Summary is empty. Please upload a valid summary."}), 400
+
     try:
         result = gemini.generate(text=summary, second_text=prepared_text, task="cover_letter")
         coverletter_data = parse_gemini_json(result)
-    except Exception as e:
-        return jsonify({"error": f"Cover letter generation failed."}), 500
+    except Exception:
+        return jsonify({"error": "Cover letter generation failed."}), 500
 
-    # 4️⃣ Fetch template safely
     try:
-        coverletter_template = storage.fetch_file("coverletter.docx", folder="coverletters")
-        if not coverletter_template:
-            return jsonify({"error": "Cover letter template not found. Please upload coverletter.docx to the 'coverletters' folder."}), 404
-    except Exception as e:
-        return jsonify({"error": f"Could not fetch cover letter template"}), 500
+        template_stream = storage.fetch_file("coverletter.docx", folder="templates")
+    except Exception:
+        return jsonify({"error": "Failed to fetch cover letter template from storage."}), 500
 
-    # 5️⃣ Merge template and data
+    if not template_stream:
+        return jsonify({"error": "Cover letter template not found. Please upload coverletter.docx to the templates folder."}), 404
+
+    print(coverletter_data)
     try:
         updated_docx_stream = DocumentUtils.update_docx_placeholders(
-            doc_source=coverletter_template,
-            replacements=coverletter_data
+            doc_source=template_stream,
+            replacements=coverletter_data,
         )
-    except Exception as e:
-        return jsonify({"error": f"Failed to populate cover letter template: {str(e)}"}), 500
+    except Exception:
+        return jsonify({"error": "Failed to populate cover letter template."}), 500
 
-    # 6️⃣ Return file
     from flask import send_file
+
+    # Build a safe filename using the company name (no spaces/special chars)
+    company_raw = coverletter_data.get("<%COMPANYNAME%>", "").strip()
+    safe_company = re.sub(r"[^A-Za-z0-9]+", "_", company_raw).strip("_") or "document"
+    download_name = f"cover_letter_{safe_company}.docx"
+
     return send_file(
         updated_docx_stream,
         as_attachment=True,
-        download_name="cover_letter.docx",
-        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        download_name=download_name,
+        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     )
 
 
-@app.route("/api/convert_to_pdf", methods=["POST"])
-def convert_to_pdf():
-    """
-    Convert an uploaded DOCX file to PDF.
-    """
-    if "file" not in request.files:
-        return jsonify({"error": "No file part"}), 400
+@app.route("/api/generate_resume", methods=["POST"])
+def generate_resume():
+    """Generate a resume by merging summary, template, and job description context."""
+    from io import BytesIO
 
-    file = request.files["file"]
-    if not file or file.filename == "":
-        return jsonify({"error": "No file uploaded"}), 400
+    data = request.json or {}
+    job_description = data.get("job_description", "").strip()
 
-    if not file.filename.lower().endswith(".docx"):
-        return jsonify({"error": "Only .docx files are allowed"}), 400
+    if not job_description:
+        return jsonify({"error": "job_description is required."}), 400
+
+    prepared_text = prepare_job_desc_text_gemini(job_description)
 
     try:
-        pdf_stream = DocumentUtils.convert_docx_to_pdf(file)
-        
-        from flask import send_file
-        return send_file(
-            pdf_stream,
-            as_attachment=True,
-            download_name=f"{os.path.splitext(file.filename)[0]}.pdf",
-            mimetype="application/pdf"
+        summary_stream = storage.fetch_file("summary.txt", folder="user")
+    except Exception:
+        return jsonify({"error": "Failed to fetch summary from storage."}), 500
+
+    if not summary_stream:
+        return jsonify({"error": "Summary not found. Please upload your summary first."}), 404
+
+    summary = summary_stream.read().decode("utf-8")
+    if not summary.strip():
+        return jsonify({"error": "Summary is empty. Please upload a valid summary."}), 400
+
+    try:
+        template_stream = storage.fetch_file("resume.docx", folder="templates")
+    except Exception:
+        return jsonify({"error": "Failed to fetch resume template from storage."}), 500
+
+    if not template_stream:
+        return jsonify({"error": "Resume template not found. Please upload resume.docx to the templates folder."}), 404
+
+    # Read template bytes once; reuse for text extraction and placeholder replacement
+    template_bytes = template_stream.read()
+
+    try:
+        raw_template_text = DocumentUtils.extract_text(BytesIO(template_bytes))
+    except Exception:
+        return jsonify({"error": "Failed to read resume template content."}), 500
+
+    template_lines = raw_template_text.splitlines()
+    template_body = "\n".join(template_lines[3:]) if len(template_lines) > 3 else ""
+
+    combined_text = f"{summary}\n\n{template_body}".strip()
+    try:
+        result = gemini.generate(text=combined_text, second_text=prepared_text, task="resume")
+
+        resume_data = parse_gemini_json(result)
+    except Exception:
+        return jsonify({"error": "Resume generation failed."}), 500
+
+    print(resume_data)
+    try:
+        updated_docx_stream = DocumentUtils.update_docx_placeholders(
+            doc_source=BytesIO(template_bytes),
+            replacements=resume_data,
         )
-    except Exception as e:
-        print(e)
-        return jsonify({"error": str(e)}), 500
+    except Exception:
+        return jsonify({"error": "Failed to populate resume template."}), 500
+
+    from flask import send_file
+
+    company_raw = resume_data.get("<%COMPANYNAME%>", "").strip()
+    safe_company = re.sub(r"[^A-Za-z0-9]+", "_", company_raw).strip("_") or "document"
+    download_name = f"resume_{safe_company}.docx"
+
+    return send_file(
+        updated_docx_stream,
+        as_attachment=True,
+        download_name=download_name,
+        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    )
 
 
+# Not needed as I am using Playwright to convert html to pdf
+# @app.route("/api/convert_to_pdf", methods=["POST"])
+# def convert_to_pdf():
+#     """
+#     Convert an uploaded DOCX file to PDF.
+#     """
+#     if "file" not in request.files:
+#         return jsonify({"error": "No file part"}), 400
+
+#     file = request.files["file"]
+#     if not file or file.filename == "":
+#         return jsonify({"error": "No file uploaded"}), 400
+
+#     if not file.filename.lower().endswith(".docx"):
+#         return jsonify({"error": "Only .docx files are allowed"}), 400
+
+#     try:
+#         pdf_stream = DocumentUtils.convert_docx_to_pdf(file)
+        
+#         from flask import send_file
+#         return send_file(
+#             pdf_stream,
+#             as_attachment=True,
+#             download_name=f"{os.path.splitext(file.filename)[0]}.pdf",
+#             mimetype="application/pdf"
+#         )
+#     except Exception as e:
+#         print(e)
+#         return jsonify({"error": str(e)}), 500
+
+
+# Needed to conver to pdf 
 @app.route("/api/html_to_pdf", methods=["POST"])
 def html_to_pdf():
     """
@@ -263,6 +345,7 @@ def html_to_pdf():
         return jsonify({"error": str(e)}), 500
 
 
+# Uploading The Resume Summary by the user
 @app.route("/api/upload-summary", methods=["POST"])
 def upload_summary():
     """
@@ -287,6 +370,8 @@ def upload_summary():
         print(e)
         return jsonify({"error": str(e)}), 500
 
+
+# Uploading the Coverletter and the Resume templates
 
 @app.route("/api/upload-template", methods=["POST"])
 def upload_template():
@@ -324,6 +409,8 @@ def upload_template():
         print(e)
         return jsonify({"error": str(e)}), 500
 
+
+# Testing here endpoints
 
 @app.route("/api/python")
 def hello_world():

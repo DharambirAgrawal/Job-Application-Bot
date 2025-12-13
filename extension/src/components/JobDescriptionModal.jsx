@@ -2,7 +2,16 @@ import React, { useState, useEffect } from "react";
 
 const MIN_LENGTH = 40;
 
-const JobDescriptionModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
+const JobDescriptionModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  isSubmitting,
+  title = "Paste the job description",
+  subtitle = "We will generate a tailored cover letter from this text.",
+  badge = "No selection detected",
+  ctaLabel = "Generate",
+}) => {
   const [text, setText] = useState("");
   const [touched, setTouched] = useState(false);
 
@@ -43,14 +52,10 @@ const JobDescriptionModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <div className="space-y-1">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-500">
-              No selection detected
+              {badge}
             </p>
-            <h3 className="text-lg font-semibold text-slate-900">
-              Paste the job description
-            </h3>
-            <p className="text-sm text-slate-500">
-              We will generate a tailored cover letter from this text.
-            </p>
+            <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+            <p className="text-sm text-slate-500">{subtitle}</p>
           </div>
           <button
             type="button"
@@ -133,7 +138,7 @@ const JobDescriptionModal = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
                   <path d="M4.5 12a1.5 1.5 0 003 0 1.5 1.5 0 00-3 0zM10.5 12a1.5 1.5 0 003 0 1.5 1.5 0 00-3 0zM16.5 12a1.5 1.5 0 003 0 1.5 1.5 0 00-3 0z" />
                 </svg>
               )}
-              Generate
+              {ctaLabel}
             </button>
           </div>
         </form>
