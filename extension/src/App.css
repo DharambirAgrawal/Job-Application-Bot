@@ -3,14 +3,14 @@
  * Most styling is done via Tailwind CSS classes
  */
 
-/* Ensure smooth transitions for all interactive elements */
-button,
-a {
+/* Ensure smooth transitions for interactive elements inside the extension only */
+[data-job-assistant-root] button,
+[data-job-assistant-root] a {
   transition: all 0.2s ease;
 }
 
 /* Prevent text selection in UI elements */
-button {
+[data-job-assistant-root] button {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -18,34 +18,34 @@ button {
 }
 
 /* Custom scrollbar for modals */
-.overflow-y-auto::-webkit-scrollbar {
+[data-job-assistant-root] .overflow-y-auto::-webkit-scrollbar {
   width: 8px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-track {
+[data-job-assistant-root] .overflow-y-auto::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 4px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb {
+[data-job-assistant-root] .overflow-y-auto::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 4px;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+[data-job-assistant-root] .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 
 /* Harden the extension UI against host page CSS overrides */
-[data-job-assistant] *,
-[data-job-assistant] *::before,
-[data-job-assistant] *::after {
+[data-job-assistant-root] *,
+[data-job-assistant-root] *::before,
+[data-job-assistant-root] *::after {
   box-sizing: border-box !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif !important;
 }
 
-[data-job-assistant] .job-assistant-fab {
+[data-job-assistant-root] .job-assistant-fab {
   width: 56px !important;
   height: 56px !important;
   border-radius: 9999px !important;
@@ -55,14 +55,14 @@ button {
   color: #fff !important;
 }
 
-[data-job-assistant] .job-assistant-fab-icon {
+[data-job-assistant-root] .job-assistant-fab-icon {
   width: 20px !important;
   height: 20px !important;
   color: #fff !important;
   stroke-width: 2 !important;
 }
 
-[data-job-assistant] button {
+[data-job-assistant-root] button {
   border: none;
   outline: none;
 }

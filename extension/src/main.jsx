@@ -5,7 +5,7 @@
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
+import stylesText from './index.css?inline'
 import App from './App.jsx'
 
 /**
@@ -21,12 +21,23 @@ function initExtension() {
   // Create root container for the extension
   const rootContainer = document.createElement('div');
   rootContainer.id = 'job-assistant-root';
-  
+
   // Add to page
   document.body.appendChild(rootContainer);
 
+  const shadowRoot = rootContainer.attachShadow({ mode: 'open' });
+
+  const styleElement = document.createElement('style');
+  styleElement.textContent = stylesText;
+
+  shadowRoot.appendChild(styleElement);
+
+  const appContainer = document.createElement('div');
+  appContainer.setAttribute('data-job-assistant-root', 'true');
+  shadowRoot.appendChild(appContainer);
+
   // Render React app
-  createRoot(rootContainer).render(
+  createRoot(appContainer).render(
     <StrictMode>
       <App />
     </StrictMode>

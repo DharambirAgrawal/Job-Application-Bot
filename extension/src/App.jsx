@@ -11,7 +11,6 @@ import useModal from "./hooks/useModal";
 import useToast from "./hooks/useToast";
 import APIService from "./services/api";
 import { getEnvironment, getApiBaseUrl } from "./config";
-import "./index.css";
 
 const LazyAboutModal = lazy(() => import("./components/AboutModal"));
 const LazyProfileModal = lazy(() => import("./components/ProfileModal"));
